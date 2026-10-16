@@ -3,6 +3,7 @@
 //
 #include <iostream>
 
+#include "net/http_client.h"
 #include "util/url.h"
 
 int main(int argc, char** argv) {
@@ -10,12 +11,21 @@ int main(int argc, char** argv) {
         std::cerr << "usage: minicrawler <url>\n";
         return 1;
     }
-    auto u = mc::parse_url(argv[1]);
-    if (!u) {
+    auto url = mc::parse_url(argv[1]);
+    if (!url) {
         std::cerr << "invalid url\n";
         return 1;
     }
-    std::cout << "scheme=" << u -> scheme << " host=" << u -> host
-        << " port=" << u -> port << " path=" << u -> path
-        << " query=" << u -> query << std::endl;
+
+    std::string err;
+    auto resp = mc::http_get(*url, &err);
+    if (!resp) {
+        std::cerr << "request failed: " << err << std::endl;
+        return 2;
+    }
+
+    std::cout << "HTTP " << resp->status << " " << resp->reason << std::endl;
+    for (const auto& [k, v] : resp->headers)
+        std::cout << k << ": " << v << "\n";
+    std::cout << "\nbody (" << resp->body.size() << "bytes):\n" << resp->body.substr(0, 300) << "\n";
 }

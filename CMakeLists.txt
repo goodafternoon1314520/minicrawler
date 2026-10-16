@@ -15,6 +15,8 @@ endif()
 # 核心库：模块存放，测试和主程序共用
 add_library(mc_core
         src/util/url.cpp
+        src/net/http_client.cpp
+        src/net/http_response.cpp
 )
 target_include_directories(mc_core PUBLIC src)
 
