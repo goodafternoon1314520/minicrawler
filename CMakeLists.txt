@@ -17,6 +17,8 @@ add_library(mc_core
         src/util/url.cpp
         src/net/http_client.cpp
         src/net/http_response.cpp
+        src/parser/html_links.cpp
+        src/crawler/crawler.cpp
 )
 target_include_directories(mc_core PUBLIC src)
 

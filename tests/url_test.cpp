@@ -6,6 +6,7 @@
 #include "util/url.h"
 
 using mc::parse_url;
+using mc::resolve_url;
 
 TEST(UrlTest, BasicHttp) {
     auto u = parse_url("http://Example.com/a/b?x=1#frag");
@@ -35,4 +36,33 @@ TEST(UrlTest, ToStringRoundTrip) {
     auto u = parse_url("HTTP://A.com:80/p?q=1#z");
     ASSERT_TRUE(u);
     EXPECT_EQ(u->to_string(), "http://a.com/p?q=1");
+}
+
+static std::string R(const std::string& ref) {
+    auto base = parse_url("http://a.com/x/y/z.html?q=1");
+    auto u = resolve_url(*base, ref);
+    return u ? u->to_string() : "<null>";
+}
+
+TEST(ResolverUrlTest, RelativeForms) {
+    EXPECT_EQ(R("../p.html"), "http://a.com/x/p.html");
+    EXPECT_EQ(R("./a"), "http://a.com/x/y/a");
+    EXPECT_EQ(R("sub/page"), "http://a.com/x/y/sub/page");
+    EXPECT_EQ(R("../"), "http://a.com/x/");
+    EXPECT_EQ(R("/root"), "http://a.com/root");
+    EXPECT_EQ(R("//cdn.com/y"), "http://cdn.com/y");
+    EXPECT_EQ(R("?k=2"), "http://a.com/x/y/z.html?k=2");
+    EXPECT_EQ(R("#top"), "http://a.com/x/y/z.html?q=1");
+    EXPECT_EQ(R(" /p "), "http://a.com/p");
+}
+
+TEST(ResolverUrlTest, CannotEscpeRoot) {
+    EXPECT_EQ(R("http://B.com/z"), "https://b.com/z");
+    EXPECT_EQ(R("javascript:void(0)"), "<null>");
+    EXPECT_EQ(R("mailto:a@b.c"), "<null>");
+    EXPECT_EQ(R("  "), "<null>");
+}
+
+TEST(UrlTest, DotSegmentsNormalized) {
+    EXPECT_EQ(parse_url("http://a.com/a/./b/../c")->path, "/a/c");
 }

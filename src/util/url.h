@@ -22,4 +22,8 @@ namespace mc {
     // 解析失败返回std::nullopt，不抛异常
     // 爬虫会遇到大量脏数据，失败是常态
     std::optional<Url> parse_url(const std::string& raw);
+
+    // 把页面里面出现的链接解析成绝对URL
+    // 遇到mailto:/javascript:/空串等不能抓取的返回nullopt
+    std::optional<Url> resolve_url(const Url& base, const std::string& ref);
 }
