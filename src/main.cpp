@@ -4,15 +4,25 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <memory>
 
-#include "net/http_client.h"
+#include "storage/mysql_store.h"
+#include "storage/mysql_db.h"
 #include "util/url.h"
 #include "crawler/crawler.h"
 
 namespace {
+    struct Cli {
+        std::string seed;
+        bool mysql = false;
+        bool stats = false;
+        mc::CrawlOptions opt;
+    };
+
     void usage() {
-        std::cerr << "Usage: minicrawler <seed_url> [--depth N] [--max-pages N]\n"
-                     "                              [--delay-ms N] [--any-host]\n";
+        std::cerr << "Usage: minicrawler <seed_url> [--depth N] [--max-pages N] [--delay-ms N]\n"
+                     "                              [--any-host] [--mysql]\n"
+                     "MySQL connection comes from env: MC_DB_HOST MC_DB_PORT MC_DB_USER MC_DB_PASS MC_DB_NAME\n";
     }
 
     bool to_long(const char *s, long *out) {
@@ -23,42 +33,77 @@ namespace {
         *out = v;
         return true;
     }
+
+    bool parse_args(int argc, char** argv, Cli* cli) {
+        for (int i = 2; i < argc; ++i) {
+            std::string a = argv[i];
+            long v = 0;
+            if (a == "--any-host")
+                cli->opt.same_host_only = false;
+            else if (a == "--mysql")
+                cli->mysql = true;
+            else if ((a == "--depth" || a == "--max-pages" || a == "--delay-ms") && i + 1 < argc && to_long(argv[i + 1], &v) && v >= 0) {
+                ++i;
+                if (a == "--depth")
+                    cli->opt.max_depth = static_cast<int>(v);
+                else if (a == "--max-pages")
+                    cli->opt.max_pages = static_cast<size_t>(v);
+                else
+                    cli->opt.delay_ms = static_cast<int>(v);
+            }
+            else if (!a.empty() && a[0] != '-' && cli->seed.empty())
+                cli->seed = a;
+            else
+                return false;
+        }
+        return cli->stats || !cli->seed.empty();
+    }
+}
+
+void print_counts(const mc::TaskCounts& c) {
+    std::cout << "tasks: pending=" << c.pending << " in_progress=" << c.in_progress << " done=" << c.done << " failed=" << c.failed << std::endl;
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
+    Cli cli;
+    if (!parse_args(argc, argv, &cli)) {
         usage();
         return 1;
     }
 
-    auto seed = mc::parse_url(argv[1]);
+    mc::Db db;
+    std::unique_ptr<mc::MysqlFrontier> frontier;
+    std::unique_ptr<mc::MysqlPageSink> sink;
+
+    if (cli.mysql) {
+        std::string err;
+        if (!db.connect(mc::DbConfig::from_env(), &err)) {
+            std::cerr << "mysql connect failed: " << err << std::endl;
+            return 2;
+        }
+        if (!mc::ensure_schema(db, &err)) {
+            std::cerr << "create scheme failed: " << err << std::endl;
+            return 2;
+        }
+        frontier = std::make_unique<mc::MysqlFrontier>(db);
+        sink = std::make_unique<mc::MysqlPageSink>(db);
+
+        if (cli.stats) {
+            print_counts(frontier->counts());
+            return 0;
+        }
+        // 上次如果崩溃推出的，有任务会卡在in_progress，这里把他们放回队列
+        if (size_t n = frontier->recover())
+            std::cout << "recovered " << n << " interrupted task(s)\n";
+    }
+
+    auto seed = mc::parse_url(cli.seed);
     if (!seed) {
-        std::cerr << "invalid url\n";
+        std::cerr << "invalid seed url\n";
         return 1;
     }
 
-    mc::CrawlOptions opt;
-    for (int i = 2; i < argc; ++i) {
-        std::string a = argv[i];
-        long v = 0;
-        if (a == "--any-host")
-            opt.same_host_only = false;
-        else if ((a == "--depth" || a == "--max-pages" || a == "--delay-ms") && i + 1 < argc && to_long(argv[i + 1], &v) && v >= 0) {
-            ++i;
-            if (a == "--depth")
-                opt.max_depth = static_cast<int>(v);
-            else if (a == "--max-pages")
-                opt.max_pages = static_cast<size_t>(v);
-            else
-                opt.delay_ms = static_cast<int>(v);
-        }
-        else {
-            usage();
-            return 1;
-        }
-    }
-
-    mc::Crawler crawler(opt, mc::default_fetcher());
+    mc::Crawler crawler(cli.opt, mc::default_fetcher(), frontier.get(), sink.get());
     auto stats = crawler.run(*seed, [](const mc::PageResult& r){
         if (r.status == 0)
             std::cout << "[d=" << r.depth << "] ERR " << r.url << " (" << r.error << ")\n";
@@ -66,5 +111,7 @@ int main(int argc, char** argv) {
             std::cout << "[d=" << r.depth << "] " << r.status << "  " << r.url << " (" << r.bytes << " bytes, " << r.links_found << " links)\n";
     });
 
-    std::cout << "\ndone: fetched=" << stats.fetched << " failed=" << stats.failed << " skipped_non_http=" << stats.skipped_unsupported << std::endl;
+    std::cout << "\ndone: fetched=" << stats.fetched << " failed=" << stats.failed << " skipped_non_http=" << stats.skipped_unsupported << " store_failed=" << stats.store_failed << std::endl;
+    if (frontier)
+        print_counts(frontier->counts());
 }

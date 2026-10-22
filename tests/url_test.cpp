@@ -56,8 +56,8 @@ TEST(ResolverUrlTest, RelativeForms) {
     EXPECT_EQ(R(" /p "), "http://a.com/p");
 }
 
-TEST(ResolverUrlTest, CannotEscpeRoot) {
-    EXPECT_EQ(R("http://B.com/z"), "https://b.com/z");
+TEST(ResolverUrlTest, CannotEscapeRoot) {
+    EXPECT_EQ(R("https://B.com/z"), "https://b.com/z");
     EXPECT_EQ(R("javascript:void(0)"), "<null>");
     EXPECT_EQ(R("mailto:a@b.c"), "<null>");
     EXPECT_EQ(R("  "), "<null>");

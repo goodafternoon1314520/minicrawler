@@ -9,6 +9,20 @@
 
 namespace {
 
+    struct FakeSink : mc::PageSink {
+        std::vector<mc::PageRecord> saved;
+        bool fail = false;
+        bool save(const mc::PageRecord& p, std::string* err) override {
+            if (fail) {
+                if (err)
+                    *err = "disk full";
+                return false;
+            }
+            saved.push_back(p);
+            return true;
+        }
+    };
+
     struct FakeWeb {
         std::map<std::string, mc::HttpResponse> pages;
         std::vector<std::string> fetched;  // 记录真正被请求的 URL 顺序
@@ -141,4 +155,55 @@ TEST(CrawlerTest, HttpsLinksAreSkippedAndCounted) {
     auto stats = c.run(seed());
     EXPECT_EQ(web.fetched.size(), 1u);
     EXPECT_EQ(stats.skipped_unsupported, 1u);  // mailto 在 resolve 阶段就被丢掉，不计入
+}
+
+TEST(MemoryFrontierTest, FifoDedupAndMarkSeen) {
+    mc::MemoryFrontier f;
+    auto u = [](const char* s) { return *mc::parse_url(s); };
+    EXPECT_TRUE(f.push(u("http://a.com/1"), 0));
+    EXPECT_TRUE(f.push(u("http://a.com/2"), 1));
+    EXPECT_FALSE(f.push(u("http://A.com/1#x"), 9));
+    f.mark_seen(u("http://a.com/3"), 1);
+    EXPECT_FALSE(f.push(u("http://a.com/3"), 1));
+
+    auto t1 = f.pop();
+    ASSERT_TRUE(t1);
+    EXPECT_EQ(t1->url.to_string(), "http://a.com/1");
+    auto t2 = f.pop();
+    ASSERT_TRUE(t2);
+    EXPECT_EQ(t2->depth, 1);
+    EXPECT_FALSE(f.pop());
+}
+
+TEST(CrawlerTest, PageAreSavedWithFinalUrl) {
+    FakeWeb web;
+    web.add("http://t.com/", R"(<a href="/old">o</a><a href="/missing">m</a)");
+    web.redirect("http://t.com/old", "/new");
+    web.add("http://t.com/new", "<p>hi</p>");
+
+    FakeSink sink;
+    mc::MemoryFrontier fr;
+    mc::Crawler c(fast(), web.fetcher(), &fr, &sink);
+    auto stats = c.run(seed());
+
+    ASSERT_EQ(sink.saved.size(), 2u);       // "missing"没有响应，不保存
+    EXPECT_EQ(sink.saved[0].url, "http://t.com/");
+    EXPECT_EQ(sink.saved[0].content_type, "text/html");
+    EXPECT_EQ(sink.saved[1].url, "http://t.com/new");       // 存的是重定向后的最终URL
+    EXPECT_EQ(sink.saved[1].depth, 1);
+    EXPECT_EQ(sink.saved[1].body, "<p>hi</p>");
+    EXPECT_EQ(stats.failed, 1u);
+}
+
+TEST(CrawlerTest, SinkFailureIsCountedButCrawlContinues) {
+    FakeWeb web;
+    web.add("http://t.com/", R"(<a href="/b">b</a>)");
+    web.add("http://t.com/b", "");
+
+    FakeSink sink;
+    sink.fail = true;
+    mc::Crawler c(fast(), web.fetcher(), nullptr, &sink);
+    auto stats = c.run(seed());
+    EXPECT_EQ(web.fetched.size(), 2u);
+    EXPECT_EQ(stats.store_failed, 2u);
 }

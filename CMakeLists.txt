@@ -22,8 +22,18 @@ add_library(mc_core
 )
 target_include_directories(mc_core PUBLIC src)
 
+# 存储层：依赖MySQL客户端库
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MYSQL REQUIRED IMPORTED_TARGET mysqlclient)
+
+add_library(mc_storage
+    src/storage/mysql_db.cpp
+    src/storage/mysql_store.cpp
+)
+target_link_libraries(mc_storage PUBLIC mc_core PkgConfig::MYSQL)
+
 add_executable(minicrawler src/main.cpp)
-target_link_libraries(minicrawler PRIVATE mc_core)
+target_link_libraries(minicrawler PRIVATE mc_core mc_storage)
 
 # 测试
 enable_testing()
