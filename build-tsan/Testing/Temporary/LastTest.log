@@ -1,0 +1,273 @@
+Start testing: Oct 26 18:07 JST
+----------------------------------------------------------
+29/44 Testing: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+29/44 Test: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.CrawlsWholeSiteConcurrently" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncCrawlerTest
+[ RUN      ] AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+[       OK ] AsyncCrawlerTest.CrawlsWholeSiteConcurrently (496 ms)
+[----------] 1 test from AsyncCrawlerTest (496 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (497 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.52 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" time elapsed: 00:00:00
+----------------------------------------------------------
+
+30/44 Testing: AsyncCrawlerTest.MaxPagesIsExact
+30/44 Test: AsyncCrawlerTest.MaxPagesIsExact
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.MaxPagesIsExact" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncCrawlerTest.MaxPagesIsExact" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncCrawlerTest.MaxPagesIsExact
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncCrawlerTest
+[ RUN      ] AsyncCrawlerTest.MaxPagesIsExact
+[       OK ] AsyncCrawlerTest.MaxPagesIsExact (59 ms)
+[----------] 1 test from AsyncCrawlerTest (60 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (60 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncCrawlerTest.MaxPagesIsExact" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.MaxPagesIsExact" time elapsed: 00:00:00
+----------------------------------------------------------
+
+31/44 Testing: AsyncCrawlerTest.PerHostLimitIsRespected
+31/44 Test: AsyncCrawlerTest.PerHostLimitIsRespected
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.PerHostLimitIsRespected" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncCrawlerTest.PerHostLimitIsRespected" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncCrawlerTest.PerHostLimitIsRespected
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncCrawlerTest
+[ RUN      ] AsyncCrawlerTest.PerHostLimitIsRespected
+[       OK ] AsyncCrawlerTest.PerHostLimitIsRespected (650 ms)
+[----------] 1 test from AsyncCrawlerTest (650 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (650 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.67 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncCrawlerTest.PerHostLimitIsRespected" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.PerHostLimitIsRespected" time elapsed: 00:00:00
+----------------------------------------------------------
+
+32/44 Testing: AsyncCrawlerTest.DedupMissingAndDeadLinks
+32/44 Test: AsyncCrawlerTest.DedupMissingAndDeadLinks
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.DedupMissingAndDeadLinks" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncCrawlerTest.DedupMissingAndDeadLinks" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncCrawlerTest.DedupMissingAndDeadLinks
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncCrawlerTest
+[ RUN      ] AsyncCrawlerTest.DedupMissingAndDeadLinks
+[       OK ] AsyncCrawlerTest.DedupMissingAndDeadLinks (57 ms)
+[----------] 1 test from AsyncCrawlerTest (57 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (58 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncCrawlerTest.DedupMissingAndDeadLinks" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.DedupMissingAndDeadLinks" time elapsed: 00:00:00
+----------------------------------------------------------
+
+33/44 Testing: AsyncCrawlerTest.TerminatesWhenNothingToDo
+33/44 Test: AsyncCrawlerTest.TerminatesWhenNothingToDo
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.TerminatesWhenNothingToDo" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncCrawlerTest.TerminatesWhenNothingToDo
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncCrawlerTest
+[ RUN      ] AsyncCrawlerTest.TerminatesWhenNothingToDo
+[       OK ] AsyncCrawlerTest.TerminatesWhenNothingToDo (54 ms)
+[----------] 1 test from AsyncCrawlerTest (54 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (55 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" time elapsed: 00:00:00
+----------------------------------------------------------
+
+34/44 Testing: AsyncHttpTest.SingleGet
+34/44 Test: AsyncHttpTest.SingleGet
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.SingleGet" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.SingleGet" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.SingleGet
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.SingleGet
+[       OK ] AsyncHttpTest.SingleGet (51 ms)
+[----------] 1 test from AsyncHttpTest (51 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (52 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.SingleGet" end time: Oct 26 18:07 JST
+"AsyncHttpTest.SingleGet" time elapsed: 00:00:00
+----------------------------------------------------------
+
+35/44 Testing: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+35/44 Test: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.ManyConcurrentRequestsOnOneThread" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+[       OK ] AsyncHttpTest.ManyConcurrentRequestsOnOneThread (169 ms)
+[----------] 1 test from AsyncHttpTest (169 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (170 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.18 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" end time: Oct 26 18:07 JST
+"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" time elapsed: 00:00:00
+----------------------------------------------------------
+
+36/44 Testing: AsyncHttpTest.TimeoutOnSilentServer
+36/44 Test: AsyncHttpTest.TimeoutOnSilentServer
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.TimeoutOnSilentServer" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.TimeoutOnSilentServer" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.TimeoutOnSilentServer
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.TimeoutOnSilentServer
+[       OK ] AsyncHttpTest.TimeoutOnSilentServer (1062 ms)
+[----------] 1 test from AsyncHttpTest (1062 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1062 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.07 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.TimeoutOnSilentServer" end time: Oct 26 18:07 JST
+"AsyncHttpTest.TimeoutOnSilentServer" time elapsed: 00:00:01
+----------------------------------------------------------
+
+37/44 Testing: AsyncHttpTest.ConnectionRefused
+37/44 Test: AsyncHttpTest.ConnectionRefused
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.ConnectionRefused" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.ConnectionRefused" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.ConnectionRefused
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.ConnectionRefused
+[       OK ] AsyncHttpTest.ConnectionRefused (0 ms)
+[----------] 1 test from AsyncHttpTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.ConnectionRefused" end time: Oct 26 18:07 JST
+"AsyncHttpTest.ConnectionRefused" time elapsed: 00:00:00
+----------------------------------------------------------
+
+38/44 Testing: AsyncHttpTest.HttpsIsRejectedAsynchronously
+38/44 Test: AsyncHttpTest.HttpsIsRejectedAsynchronously
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.HttpsIsRejectedAsynchronously" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.HttpsIsRejectedAsynchronously" start time: Oct 26 18:07 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.HttpsIsRejectedAsynchronously
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.HttpsIsRejectedAsynchronously
+[       OK ] AsyncHttpTest.HttpsIsRejectedAsynchronously (20 ms)
+[----------] 1 test from AsyncHttpTest (20 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (21 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.HttpsIsRejectedAsynchronously" end time: Oct 26 18:07 JST
+"AsyncHttpTest.HttpsIsRejectedAsynchronously" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 26 18:07 JST

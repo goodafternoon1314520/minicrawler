@@ -1,0 +1,5 @@
+if(EXISTS "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test[1]_tests.cmake")
+  include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test[1]_tests.cmake")
+else()
+  add_test(async_http_test_NOT_BUILT async_http_test_NOT_BUILT)
+endif()

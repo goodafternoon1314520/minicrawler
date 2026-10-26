@@ -1,0 +1,7 @@
+add_test([=[HttpClientTest.GetChunkedFromLocalServer]=]  /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/http_client_test [==[--gtest_filter=HttpClientTest.GetChunkedFromLocalServer]==] --gtest_also_run_disabled_tests)
+set_tests_properties([=[HttpClientTest.GetChunkedFromLocalServer]=]  PROPERTIES WORKING_DIRECTORY /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test([=[HttpClientTest.ConnectionRefused]=]  /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/http_client_test [==[--gtest_filter=HttpClientTest.ConnectionRefused]==] --gtest_also_run_disabled_tests)
+set_tests_properties([=[HttpClientTest.ConnectionRefused]=]  PROPERTIES WORKING_DIRECTORY /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+add_test([=[HttpClientTest.RejectsHttps]=]  /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/http_client_test [==[--gtest_filter=HttpClientTest.RejectsHttps]==] --gtest_also_run_disabled_tests)
+set_tests_properties([=[HttpClientTest.RejectsHttps]=]  PROPERTIES WORKING_DIRECTORY /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
+set(  http_client_test_TESTS HttpClientTest.GetChunkedFromLocalServer HttpClientTest.ConnectionRefused HttpClientTest.RejectsHttps)

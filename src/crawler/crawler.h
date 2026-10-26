@@ -16,6 +16,9 @@ namespace mc {
         bool same_host_only = true;
         int delay_ms = 500;
         int max_redirects = 3;
+        int concurrency = 16;        // 同时进行的请求数
+        int max_per_host = 8;       // 同一站点同时进行的请求上限
+        int timeout_sec = 10;
     };
 
     struct PageResult {
@@ -32,6 +35,7 @@ namespace mc {
         size_t failed = 0;
         size_t skipped_unsupported = 0;
         size_t store_failed = 0;  // 入库失败的页面数
+        size_t peak_in_flight = 0;          // 运行期间同时在途的请求峰值
     };
 
     using Fetcher = std::function<std::optional<HttpResponse>(const Url&, std::string*)>;

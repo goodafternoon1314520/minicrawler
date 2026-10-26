@@ -5,7 +5,7 @@ FetchContent_MakeAvailable(googletest)
 find_package(Threads REQUIRED)
 include(GoogleTest)
 
-foreach(t url_test http_response_test http_client_test html_links_test crawler_test)
+foreach(t url_test http_response_test http_client_test html_links_test crawler_test async_crawler_test async_http_test)
     add_executable(${t} ${t}.cpp)
     target_link_libraries(${t} PRIVATE mc_core GTest::gtest_main Threads::Threads)
     gtest_discover_tests(${t})

@@ -1,0 +1,11 @@
+AsyncCrawlerTest.CrawlsWholeSiteConcurrently 1 0.517982
+AsyncCrawlerTest.MaxPagesIsExact 1 0.0799365
+AsyncCrawlerTest.PerHostLimitIsRespected 1 0.669614
+AsyncCrawlerTest.DedupMissingAndDeadLinks 1 0.0757809
+AsyncCrawlerTest.TerminatesWhenNothingToDo 1 0.0716777
+AsyncHttpTest.SingleGet 1 0.0623091
+AsyncHttpTest.ManyConcurrentRequestsOnOneThread 1 0.180994
+AsyncHttpTest.TimeoutOnSilentServer 1 1.07111
+AsyncHttpTest.ConnectionRefused 1 0.00944433
+AsyncHttpTest.HttpsIsRejectedAsynchronously 1 0.0289861
+---
