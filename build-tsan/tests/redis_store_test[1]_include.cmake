@@ -1,0 +1,5 @@
+if(EXISTS "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test[1]_tests.cmake")
+  include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test[1]_tests.cmake")
+else()
+  add_test(redis_store_test_NOT_BUILT redis_store_test_NOT_BUILT)
+endif()

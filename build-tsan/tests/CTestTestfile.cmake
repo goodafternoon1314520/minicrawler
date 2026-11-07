@@ -11,5 +11,8 @@ include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/html_
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/crawler_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test[1]_include.cmake")
+include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test[1]_include.cmake")
+include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test[1]_include.cmake")
+include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/resp_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/mysql_store_test[1]_include.cmake")
 subdirs("../_deps/googletest-build")

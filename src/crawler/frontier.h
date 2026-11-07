@@ -3,10 +3,14 @@
 #include <optional>
 #include <string>
 #include <unordered_set>
+#include <cstdint>
 
 #include "util/url.h"
 
 namespace mc {
+    struct TaskCounts {
+        uint64_t pending = 0, in_progress = 0, done = 0, failed = 0;
+    };
 
     struct Task {
         Url url;
@@ -29,6 +33,10 @@ namespace mc {
 
         // 任务结束。ok=false 时 error 记录原因
         virtual void complete(const Url& url, bool ok, const std::string& error) = 0;
+
+        // 队列暂时取空时调用，是否还有别的进程持有为完成的任务
+        // 他们完成后可能产生新链接，所以现在退出可能为时过早，单进程实现保持默认false
+        virtual bool others_active() { return false; }
     };
 
 // Step 2 的行为：纯内存，进程退出就没了

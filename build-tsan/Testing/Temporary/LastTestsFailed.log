@@ -1,0 +1,9 @@
+44:RedisTest.PushDedupFifo
+46:RedisTest.CompletionBookkeeping
+47:RedisTest.InProgressIsCountedForRegisteredWorker
+48:RedisTest.RecoverAfterCrash
+49:RedisTest.TwoWorkersShareTheQueueWithoutDuplicates
+50:RedisTest.OthersActiveFollowsTheLifecycle
+51:RedisTest.DeadWorkersTasksAreReclaimed
+52:RedisTest.AsyncCrawlerRunsOnRedisFrontier
+53:RedisTest.TwoCrawlersShareOneQueue

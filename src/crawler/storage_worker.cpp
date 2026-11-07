@@ -31,12 +31,13 @@ namespace mc {
             std::lock_guard<std::mutex> lk(mu_);
             cmds_.push_back(std::move(c));
             exhausted_ = false;             // 新命令可能带来新任务，之前的取空结论作废
+            retry_at_ = std::chrono::steady_clock::time_point {};
         }
         cv_.notify_one();
     }
 
     bool StorageWorker::need_fill_locked() const {
-        return !exhausted_ && popped_ < budget_ && ready_.size() < prefetch_;
+        return !exhausted_ && popped_ < budget_ && ready_.size() < prefetch_ && std::chrono::steady_clock::now() >= retry_at_;
     }
 
     bool StorageWorker::take(Task* out) {
@@ -85,9 +86,16 @@ namespace mc {
     }
 
     void StorageWorker::run() {
+        using Clock = std::chrono::steady_clock;
         std::unique_lock<std::mutex> lk(mu_);
         while (true) {
-            cv_.wait(lk, [this] { return stop_ || !cmds_.empty() || need_fill_locked(); });
+            auto can_proceed = [this] { return stop_ || !cmds_.empty() || need_fill_locked(); };
+            // retry_at_在未来：最多睡到那个时刻，否则无限等待通知
+            // 注意不能对过去的时刻调用wait_until，那会立即返回，变成空转
+            if (retry_at_ > Clock::now())
+                cv_.wait_until(lk, retry_at_, can_proceed);
+            else
+                cv_.wait(lk, can_proceed);
 
             // 1. 命令优先：他们产生新任务，释放在途状态
             if (!cmds_.empty()) {
@@ -112,13 +120,18 @@ namespace mc {
             if (need_fill_locked()) {
                 lk.unlock();
                 std::optional<Task> t = frontier_.pop();        // 阻塞调用，同样不持续
+                const bool others = !t && frontier_.others_active();        // 也是I/O，同样不持锁
                 lk.lock();
                 if (t) {
                     ready_.push_back(std::move(*t));
                     ++popped_;
                 }
-                else if (cmds_.empty())
-                    exhausted_ = true;                          // pop期间若来了新命令，就不能下这个结论
+                else if (cmds_.empty()) {
+                    if (others)
+                        retry_at_ = Clock::now() + std::chrono::milliseconds(100);
+                    else
+                        exhausted_ = true;
+                }
             }
             lk.unlock();
             if (wake_)

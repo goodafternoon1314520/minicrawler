@@ -1,10 +1,10 @@
-Start testing: Oct 26 18:07 JST
+Start testing: Nov 07 14:28 JST
 ----------------------------------------------------------
-29/44 Testing: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
-29/44 Test: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+29/66 Testing: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
+29/66 Test: AsyncCrawlerTest.CrawlsWholeSiteConcurrently
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.CrawlsWholeSiteConcurrently" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" start time: Oct 26 18:07 JST
+"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -13,25 +13,25 @@ Note: Google Test filter = AsyncCrawlerTest.CrawlsWholeSiteConcurrently
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncCrawlerTest
 [ RUN      ] AsyncCrawlerTest.CrawlsWholeSiteConcurrently
-[       OK ] AsyncCrawlerTest.CrawlsWholeSiteConcurrently (496 ms)
-[----------] 1 test from AsyncCrawlerTest (496 ms total)
+[       OK ] AsyncCrawlerTest.CrawlsWholeSiteConcurrently (489 ms)
+[----------] 1 test from AsyncCrawlerTest (490 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (497 ms total)
+[==========] 1 test from 1 test suite ran. (490 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.52 sec
+Test time =   0.50 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.CrawlsWholeSiteConcurrently" end time: Nov 07 14:28 JST
 "AsyncCrawlerTest.CrawlsWholeSiteConcurrently" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-30/44 Testing: AsyncCrawlerTest.MaxPagesIsExact
-30/44 Test: AsyncCrawlerTest.MaxPagesIsExact
+30/66 Testing: AsyncCrawlerTest.MaxPagesIsExact
+30/66 Test: AsyncCrawlerTest.MaxPagesIsExact
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.MaxPagesIsExact" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncCrawlerTest.MaxPagesIsExact" start time: Oct 26 18:07 JST
+"AsyncCrawlerTest.MaxPagesIsExact" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -40,25 +40,25 @@ Note: Google Test filter = AsyncCrawlerTest.MaxPagesIsExact
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncCrawlerTest
 [ RUN      ] AsyncCrawlerTest.MaxPagesIsExact
-[       OK ] AsyncCrawlerTest.MaxPagesIsExact (59 ms)
-[----------] 1 test from AsyncCrawlerTest (60 ms total)
+[       OK ] AsyncCrawlerTest.MaxPagesIsExact (56 ms)
+[----------] 1 test from AsyncCrawlerTest (56 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (60 ms total)
+[==========] 1 test from 1 test suite ran. (56 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.08 sec
+Test time =   0.07 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncCrawlerTest.MaxPagesIsExact" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.MaxPagesIsExact" end time: Nov 07 14:28 JST
 "AsyncCrawlerTest.MaxPagesIsExact" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-31/44 Testing: AsyncCrawlerTest.PerHostLimitIsRespected
-31/44 Test: AsyncCrawlerTest.PerHostLimitIsRespected
+31/66 Testing: AsyncCrawlerTest.PerHostLimitIsRespected
+31/66 Test: AsyncCrawlerTest.PerHostLimitIsRespected
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.PerHostLimitIsRespected" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncCrawlerTest.PerHostLimitIsRespected" start time: Oct 26 18:07 JST
+"AsyncCrawlerTest.PerHostLimitIsRespected" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -67,25 +67,25 @@ Note: Google Test filter = AsyncCrawlerTest.PerHostLimitIsRespected
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncCrawlerTest
 [ RUN      ] AsyncCrawlerTest.PerHostLimitIsRespected
-[       OK ] AsyncCrawlerTest.PerHostLimitIsRespected (650 ms)
-[----------] 1 test from AsyncCrawlerTest (650 ms total)
+[       OK ] AsyncCrawlerTest.PerHostLimitIsRespected (638 ms)
+[----------] 1 test from AsyncCrawlerTest (638 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (650 ms total)
+[==========] 1 test from 1 test suite ran. (638 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.67 sec
+Test time =   0.65 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncCrawlerTest.PerHostLimitIsRespected" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.PerHostLimitIsRespected" end time: Nov 07 14:28 JST
 "AsyncCrawlerTest.PerHostLimitIsRespected" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-32/44 Testing: AsyncCrawlerTest.DedupMissingAndDeadLinks
-32/44 Test: AsyncCrawlerTest.DedupMissingAndDeadLinks
+32/66 Testing: AsyncCrawlerTest.DedupMissingAndDeadLinks
+32/66 Test: AsyncCrawlerTest.DedupMissingAndDeadLinks
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.DedupMissingAndDeadLinks" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncCrawlerTest.DedupMissingAndDeadLinks" start time: Oct 26 18:07 JST
+"AsyncCrawlerTest.DedupMissingAndDeadLinks" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -94,25 +94,25 @@ Note: Google Test filter = AsyncCrawlerTest.DedupMissingAndDeadLinks
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncCrawlerTest
 [ RUN      ] AsyncCrawlerTest.DedupMissingAndDeadLinks
-[       OK ] AsyncCrawlerTest.DedupMissingAndDeadLinks (57 ms)
+[       OK ] AsyncCrawlerTest.DedupMissingAndDeadLinks (56 ms)
 [----------] 1 test from AsyncCrawlerTest (57 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (58 ms total)
+[==========] 1 test from 1 test suite ran. (57 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.08 sec
+Test time =   0.07 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncCrawlerTest.DedupMissingAndDeadLinks" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.DedupMissingAndDeadLinks" end time: Nov 07 14:28 JST
 "AsyncCrawlerTest.DedupMissingAndDeadLinks" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-33/44 Testing: AsyncCrawlerTest.TerminatesWhenNothingToDo
-33/44 Test: AsyncCrawlerTest.TerminatesWhenNothingToDo
+33/66 Testing: AsyncCrawlerTest.TerminatesWhenNothingToDo
+33/66 Test: AsyncCrawlerTest.TerminatesWhenNothingToDo
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_crawler_test" "--gtest_filter=AsyncCrawlerTest.TerminatesWhenNothingToDo" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncCrawlerTest.TerminatesWhenNothingToDo" start time: Oct 26 18:07 JST
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -121,35 +121,8 @@ Note: Google Test filter = AsyncCrawlerTest.TerminatesWhenNothingToDo
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncCrawlerTest
 [ RUN      ] AsyncCrawlerTest.TerminatesWhenNothingToDo
-[       OK ] AsyncCrawlerTest.TerminatesWhenNothingToDo (54 ms)
-[----------] 1 test from AsyncCrawlerTest (54 ms total)
-
-[----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (55 ms total)
-[  PASSED  ] 1 test.
-<end of output>
-Test time =   0.07 sec
-----------------------------------------------------------
-Test Passed.
-"AsyncCrawlerTest.TerminatesWhenNothingToDo" end time: Oct 26 18:07 JST
-"AsyncCrawlerTest.TerminatesWhenNothingToDo" time elapsed: 00:00:00
-----------------------------------------------------------
-
-34/44 Testing: AsyncHttpTest.SingleGet
-34/44 Test: AsyncHttpTest.SingleGet
-Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.SingleGet" "--gtest_also_run_disabled_tests"
-Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncHttpTest.SingleGet" start time: Oct 26 18:07 JST
-Output:
-----------------------------------------------------------
-Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
-Note: Google Test filter = AsyncHttpTest.SingleGet
-[==========] Running 1 test from 1 test suite.
-[----------] Global test environment set-up.
-[----------] 1 test from AsyncHttpTest
-[ RUN      ] AsyncHttpTest.SingleGet
-[       OK ] AsyncHttpTest.SingleGet (51 ms)
-[----------] 1 test from AsyncHttpTest (51 ms total)
+[       OK ] AsyncCrawlerTest.TerminatesWhenNothingToDo (52 ms)
+[----------] 1 test from AsyncCrawlerTest (52 ms total)
 
 [----------] Global test environment tear-down
 [==========] 1 test from 1 test suite ran. (52 ms total)
@@ -158,15 +131,42 @@ Note: Google Test filter = AsyncHttpTest.SingleGet
 Test time =   0.06 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncHttpTest.SingleGet" end time: Oct 26 18:07 JST
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" end time: Nov 07 14:28 JST
+"AsyncCrawlerTest.TerminatesWhenNothingToDo" time elapsed: 00:00:00
+----------------------------------------------------------
+
+34/66 Testing: AsyncHttpTest.SingleGet
+34/66 Test: AsyncHttpTest.SingleGet
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.SingleGet" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"AsyncHttpTest.SingleGet" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = AsyncHttpTest.SingleGet
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from AsyncHttpTest
+[ RUN      ] AsyncHttpTest.SingleGet
+[       OK ] AsyncHttpTest.SingleGet (52 ms)
+[----------] 1 test from AsyncHttpTest (52 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (52 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"AsyncHttpTest.SingleGet" end time: Nov 07 14:28 JST
 "AsyncHttpTest.SingleGet" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-35/44 Testing: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
-35/44 Test: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+35/66 Testing: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
+35/66 Test: AsyncHttpTest.ManyConcurrentRequestsOnOneThread
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.ManyConcurrentRequestsOnOneThread" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" start time: Oct 26 18:07 JST
+"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -179,21 +179,21 @@ Note: Google Test filter = AsyncHttpTest.ManyConcurrentRequestsOnOneThread
 [----------] 1 test from AsyncHttpTest (169 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (170 ms total)
+[==========] 1 test from 1 test suite ran. (169 ms total)
 [  PASSED  ] 1 test.
 <end of output>
 Test time =   0.18 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" end time: Oct 26 18:07 JST
+"AsyncHttpTest.ManyConcurrentRequestsOnOneThread" end time: Nov 07 14:28 JST
 "AsyncHttpTest.ManyConcurrentRequestsOnOneThread" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-36/44 Testing: AsyncHttpTest.TimeoutOnSilentServer
-36/44 Test: AsyncHttpTest.TimeoutOnSilentServer
+36/66 Testing: AsyncHttpTest.TimeoutOnSilentServer
+36/66 Test: AsyncHttpTest.TimeoutOnSilentServer
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.TimeoutOnSilentServer" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncHttpTest.TimeoutOnSilentServer" start time: Oct 26 18:07 JST
+"AsyncHttpTest.TimeoutOnSilentServer" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -202,25 +202,25 @@ Note: Google Test filter = AsyncHttpTest.TimeoutOnSilentServer
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncHttpTest
 [ RUN      ] AsyncHttpTest.TimeoutOnSilentServer
-[       OK ] AsyncHttpTest.TimeoutOnSilentServer (1062 ms)
-[----------] 1 test from AsyncHttpTest (1062 ms total)
+[       OK ] AsyncHttpTest.TimeoutOnSilentServer (1061 ms)
+[----------] 1 test from AsyncHttpTest (1061 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (1062 ms total)
+[==========] 1 test from 1 test suite ran. (1061 ms total)
 [  PASSED  ] 1 test.
 <end of output>
 Test time =   1.07 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncHttpTest.TimeoutOnSilentServer" end time: Oct 26 18:07 JST
+"AsyncHttpTest.TimeoutOnSilentServer" end time: Nov 07 14:28 JST
 "AsyncHttpTest.TimeoutOnSilentServer" time elapsed: 00:00:01
 ----------------------------------------------------------
 
-37/44 Testing: AsyncHttpTest.ConnectionRefused
-37/44 Test: AsyncHttpTest.ConnectionRefused
+37/66 Testing: AsyncHttpTest.ConnectionRefused
+37/66 Test: AsyncHttpTest.ConnectionRefused
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.ConnectionRefused" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncHttpTest.ConnectionRefused" start time: Oct 26 18:07 JST
+"AsyncHttpTest.ConnectionRefused" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -233,21 +233,21 @@ Note: Google Test filter = AsyncHttpTest.ConnectionRefused
 [----------] 1 test from AsyncHttpTest (0 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (0 ms total)
+[==========] 1 test from 1 test suite ran. (1 ms total)
 [  PASSED  ] 1 test.
 <end of output>
-Test time =   0.01 sec
+Test time =   0.02 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncHttpTest.ConnectionRefused" end time: Oct 26 18:07 JST
+"AsyncHttpTest.ConnectionRefused" end time: Nov 07 14:28 JST
 "AsyncHttpTest.ConnectionRefused" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-38/44 Testing: AsyncHttpTest.HttpsIsRejectedAsynchronously
-38/44 Test: AsyncHttpTest.HttpsIsRejectedAsynchronously
+38/66 Testing: AsyncHttpTest.HttpsIsRejectedAsynchronously
+38/66 Test: AsyncHttpTest.HttpsIsRejectedAsynchronously
 Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async_http_test" "--gtest_filter=AsyncHttpTest.HttpsIsRejectedAsynchronously" "--gtest_also_run_disabled_tests"
 Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
-"AsyncHttpTest.HttpsIsRejectedAsynchronously" start time: Oct 26 18:07 JST
+"AsyncHttpTest.HttpsIsRejectedAsynchronously" start time: Nov 07 14:28 JST
 Output:
 ----------------------------------------------------------
 Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
@@ -256,8 +256,8 @@ Note: Google Test filter = AsyncHttpTest.HttpsIsRejectedAsynchronously
 [----------] Global test environment set-up.
 [----------] 1 test from AsyncHttpTest
 [ RUN      ] AsyncHttpTest.HttpsIsRejectedAsynchronously
-[       OK ] AsyncHttpTest.HttpsIsRejectedAsynchronously (20 ms)
-[----------] 1 test from AsyncHttpTest (20 ms total)
+[       OK ] AsyncHttpTest.HttpsIsRejectedAsynchronously (21 ms)
+[----------] 1 test from AsyncHttpTest (21 ms total)
 
 [----------] Global test environment tear-down
 [==========] 1 test from 1 test suite ran. (21 ms total)
@@ -266,8 +266,413 @@ Note: Google Test filter = AsyncHttpTest.HttpsIsRejectedAsynchronously
 Test time =   0.03 sec
 ----------------------------------------------------------
 Test Passed.
-"AsyncHttpTest.HttpsIsRejectedAsynchronously" end time: Oct 26 18:07 JST
+"AsyncHttpTest.HttpsIsRejectedAsynchronously" end time: Nov 07 14:28 JST
 "AsyncHttpTest.HttpsIsRejectedAsynchronously" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Oct 26 18:07 JST
+39/66 Testing: RedisClientTest.ReassemblesSplitReply
+39/66 Test: RedisClientTest.ReassemblesSplitReply
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test" "--gtest_filter=RedisClientTest.ReassemblesSplitReply" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisClientTest.ReassemblesSplitReply" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisClientTest.ReassemblesSplitReply
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisClientTest
+[ RUN      ] RedisClientTest.ReassemblesSplitReply
+[       OK ] RedisClientTest.ReassemblesSplitReply (93 ms)
+[----------] 1 test from RedisClientTest (93 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (94 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"RedisClientTest.ReassemblesSplitReply" end time: Nov 07 14:28 JST
+"RedisClientTest.ReassemblesSplitReply" time elapsed: 00:00:00
+----------------------------------------------------------
+
+40/66 Testing: RedisClientTest.ErrorReplyBecomesFailure
+40/66 Test: RedisClientTest.ErrorReplyBecomesFailure
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test" "--gtest_filter=RedisClientTest.ErrorReplyBecomesFailure" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisClientTest.ErrorReplyBecomesFailure" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisClientTest.ErrorReplyBecomesFailure
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisClientTest
+[ RUN      ] RedisClientTest.ErrorReplyBecomesFailure
+[       OK ] RedisClientTest.ErrorReplyBecomesFailure (32 ms)
+[----------] 1 test from RedisClientTest (32 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (33 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"RedisClientTest.ErrorReplyBecomesFailure" end time: Nov 07 14:28 JST
+"RedisClientTest.ErrorReplyBecomesFailure" time elapsed: 00:00:00
+----------------------------------------------------------
+
+41/66 Testing: RedisClientTest.ServerClosesWithoutReply
+41/66 Test: RedisClientTest.ServerClosesWithoutReply
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test" "--gtest_filter=RedisClientTest.ServerClosesWithoutReply" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisClientTest.ServerClosesWithoutReply" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisClientTest.ServerClosesWithoutReply
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisClientTest
+[ RUN      ] RedisClientTest.ServerClosesWithoutReply
+[       OK ] RedisClientTest.ServerClosesWithoutReply (1 ms)
+[----------] 1 test from RedisClientTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"RedisClientTest.ServerClosesWithoutReply" end time: Nov 07 14:28 JST
+"RedisClientTest.ServerClosesWithoutReply" time elapsed: 00:00:00
+----------------------------------------------------------
+
+42/66 Testing: RedisClientTest.TimesOutOnSilentServer
+42/66 Test: RedisClientTest.TimesOutOnSilentServer
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test" "--gtest_filter=RedisClientTest.TimesOutOnSilentServer" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisClientTest.TimesOutOnSilentServer" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisClientTest.TimesOutOnSilentServer
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisClientTest
+[ RUN      ] RedisClientTest.TimesOutOnSilentServer
+[       OK ] RedisClientTest.TimesOutOnSilentServer (2501 ms)
+[----------] 1 test from RedisClientTest (2501 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2502 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   2.52 sec
+----------------------------------------------------------
+Test Passed.
+"RedisClientTest.TimesOutOnSilentServer" end time: Nov 07 14:28 JST
+"RedisClientTest.TimesOutOnSilentServer" time elapsed: 00:00:02
+----------------------------------------------------------
+
+43/66 Testing: RedisClientTest.ConnectionRefused
+43/66 Test: RedisClientTest.ConnectionRefused
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test" "--gtest_filter=RedisClientTest.ConnectionRefused" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisClientTest.ConnectionRefused" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisClientTest.ConnectionRefused
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisClientTest
+[ RUN      ] RedisClientTest.ConnectionRefused
+[       OK ] RedisClientTest.ConnectionRefused (0 ms)
+[----------] 1 test from RedisClientTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"RedisClientTest.ConnectionRefused" end time: Nov 07 14:28 JST
+"RedisClientTest.ConnectionRefused" time elapsed: 00:00:00
+----------------------------------------------------------
+
+44/66 Testing: RedisTest.PushDedupFifo
+44/66 Test: RedisTest.PushDedupFifo
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.PushDedupFifo" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.PushDedupFifo" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.PushDedupFifo
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.PushDedupFifo
+[       OK ] RedisTest.PushDedupFifo (1 ms)
+[----------] 1 test from RedisTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.PushDedupFifo" end time: Nov 07 14:28 JST
+"RedisTest.PushDedupFifo" time elapsed: 00:00:00
+----------------------------------------------------------
+
+45/66 Testing: RedisTest.MarkSeenPreventsEnqueue
+45/66 Test: RedisTest.MarkSeenPreventsEnqueue
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.MarkSeenPreventsEnqueue" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.MarkSeenPreventsEnqueue" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.MarkSeenPreventsEnqueue
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.MarkSeenPreventsEnqueue
+[       OK ] RedisTest.MarkSeenPreventsEnqueue (0 ms)
+[----------] 1 test from RedisTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.MarkSeenPreventsEnqueue" end time: Nov 07 14:28 JST
+"RedisTest.MarkSeenPreventsEnqueue" time elapsed: 00:00:00
+----------------------------------------------------------
+
+46/66 Testing: RedisTest.CompletionBookkeeping
+46/66 Test: RedisTest.CompletionBookkeeping
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.CompletionBookkeeping" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.CompletionBookkeeping" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.CompletionBookkeeping
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.CompletionBookkeeping
+[       OK ] RedisTest.CompletionBookkeeping (2 ms)
+[----------] 1 test from RedisTest (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.CompletionBookkeeping" end time: Nov 07 14:28 JST
+"RedisTest.CompletionBookkeeping" time elapsed: 00:00:00
+----------------------------------------------------------
+
+47/66 Testing: RedisTest.InProgressIsCountedForRegisteredWorker
+47/66 Test: RedisTest.InProgressIsCountedForRegisteredWorker
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.InProgressIsCountedForRegisteredWorker" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.InProgressIsCountedForRegisteredWorker" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.InProgressIsCountedForRegisteredWorker
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.InProgressIsCountedForRegisteredWorker
+[       OK ] RedisTest.InProgressIsCountedForRegisteredWorker (1 ms)
+[----------] 1 test from RedisTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.InProgressIsCountedForRegisteredWorker" end time: Nov 07 14:28 JST
+"RedisTest.InProgressIsCountedForRegisteredWorker" time elapsed: 00:00:00
+----------------------------------------------------------
+
+48/66 Testing: RedisTest.RecoverAfterCrash
+48/66 Test: RedisTest.RecoverAfterCrash
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.RecoverAfterCrash" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.RecoverAfterCrash" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.RecoverAfterCrash
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.RecoverAfterCrash
+[       OK ] RedisTest.RecoverAfterCrash (1 ms)
+[----------] 1 test from RedisTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.RecoverAfterCrash" end time: Nov 07 14:28 JST
+"RedisTest.RecoverAfterCrash" time elapsed: 00:00:00
+----------------------------------------------------------
+
+49/66 Testing: RedisTest.TwoWorkersShareTheQueueWithoutDuplicates
+49/66 Test: RedisTest.TwoWorkersShareTheQueueWithoutDuplicates
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.TwoWorkersShareTheQueueWithoutDuplicates" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.TwoWorkersShareTheQueueWithoutDuplicates" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.TwoWorkersShareTheQueueWithoutDuplicates
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.TwoWorkersShareTheQueueWithoutDuplicates
+[       OK ] RedisTest.TwoWorkersShareTheQueueWithoutDuplicates (5 ms)
+[----------] 1 test from RedisTest (5 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (5 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.TwoWorkersShareTheQueueWithoutDuplicates" end time: Nov 07 14:28 JST
+"RedisTest.TwoWorkersShareTheQueueWithoutDuplicates" time elapsed: 00:00:00
+----------------------------------------------------------
+
+50/66 Testing: RedisTest.OthersActiveFollowsTheLifecycle
+50/66 Test: RedisTest.OthersActiveFollowsTheLifecycle
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.OthersActiveFollowsTheLifecycle" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.OthersActiveFollowsTheLifecycle" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.OthersActiveFollowsTheLifecycle
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.OthersActiveFollowsTheLifecycle
+[       OK ] RedisTest.OthersActiveFollowsTheLifecycle (2 ms)
+[----------] 1 test from RedisTest (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.OthersActiveFollowsTheLifecycle" end time: Nov 07 14:28 JST
+"RedisTest.OthersActiveFollowsTheLifecycle" time elapsed: 00:00:00
+----------------------------------------------------------
+
+51/66 Testing: RedisTest.DeadWorkersTasksAreReclaimed
+51/66 Test: RedisTest.DeadWorkersTasksAreReclaimed
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.DeadWorkersTasksAreReclaimed" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.DeadWorkersTasksAreReclaimed" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.DeadWorkersTasksAreReclaimed
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.DeadWorkersTasksAreReclaimed
+[       OK ] RedisTest.DeadWorkersTasksAreReclaimed (2506 ms)
+[----------] 1 test from RedisTest (2506 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2507 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   2.52 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.DeadWorkersTasksAreReclaimed" end time: Nov 07 14:28 JST
+"RedisTest.DeadWorkersTasksAreReclaimed" time elapsed: 00:00:02
+----------------------------------------------------------
+
+52/66 Testing: RedisTest.AsyncCrawlerRunsOnRedisFrontier
+52/66 Test: RedisTest.AsyncCrawlerRunsOnRedisFrontier
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.AsyncCrawlerRunsOnRedisFrontier" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.AsyncCrawlerRunsOnRedisFrontier" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.AsyncCrawlerRunsOnRedisFrontier
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.AsyncCrawlerRunsOnRedisFrontier
+[       OK ] RedisTest.AsyncCrawlerRunsOnRedisFrontier (131 ms)
+[----------] 1 test from RedisTest (131 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (132 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.15 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.AsyncCrawlerRunsOnRedisFrontier" end time: Nov 07 14:28 JST
+"RedisTest.AsyncCrawlerRunsOnRedisFrontier" time elapsed: 00:00:00
+----------------------------------------------------------
+
+53/66 Testing: RedisTest.TwoCrawlersShareOneQueue
+53/66 Test: RedisTest.TwoCrawlersShareOneQueue
+Command: "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test" "--gtest_filter=RedisTest.TwoCrawlersShareOneQueue" "--gtest_also_run_disabled_tests"
+Directory: /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests
+"RedisTest.TwoCrawlersShareOneQueue" start time: Nov 07 14:28 JST
+Output:
+----------------------------------------------------------
+Running main() from /home/davidcopperfield/CLionProjects/minicrawler/build-tsan/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = RedisTest.TwoCrawlersShareOneQueue
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from RedisTest
+[ RUN      ] RedisTest.TwoCrawlersShareOneQueue
+[       OK ] RedisTest.TwoCrawlersShareOneQueue (459 ms)
+[----------] 1 test from RedisTest (459 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (459 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.48 sec
+----------------------------------------------------------
+Test Passed.
+"RedisTest.TwoCrawlersShareOneQueue" end time: Nov 07 14:28 JST
+"RedisTest.TwoCrawlersShareOneQueue" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 07 14:28 JST

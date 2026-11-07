@@ -11,10 +11,6 @@ namespace mc {
     // 建表
     bool ensure_schema(Db& db, std::string* err);
 
-    struct TaskCounts {
-        uint64_t pending = 0, in_progress = 0, done = 0, failed = 0;
-    };
-
     // 持久化的任务队列
     class MysqlFrontier : public Frontier {
     public:

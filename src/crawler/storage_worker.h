@@ -8,6 +8,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <chrono>
 
 #include "crawler/frontier.h"
 #include "crawler/page_sink.h"
@@ -55,6 +56,7 @@ namespace mc {
         bool busy_ = false;             // 正在执行某条命令
         bool exhausted_ = false;        // 最后一次pop返回空，且之后没有新命令
         bool stop_ = false;
+        std::chrono::steady_clock::time_point retry_at_{};      // pop 倒空但别人还在干活时，下次重试的时间
         std::atomic<size_t> store_failed_{0};
         std::thread thread_;
     };
