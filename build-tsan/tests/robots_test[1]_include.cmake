@@ -1,0 +1,5 @@
+if(EXISTS "/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/robots_test[1]_tests.cmake")
+  include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/robots_test[1]_tests.cmake")
+else()
+  add_test(robots_test_NOT_BUILT robots_test_NOT_BUILT)
+endif()

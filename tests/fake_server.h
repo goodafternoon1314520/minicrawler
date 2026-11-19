@@ -105,9 +105,16 @@ private:
 
         std::string body;
         bool ok = handler_(path, &body);
-        std::string resp = std::string(ok ? "HTTP/1.1 200 OK" : "HTTP/1.1 404 Not Found") +
-                            "\r\nContent-Type: text/html\r\nContent-Length: " +
-                            std::to_string(body.size()) + "\r\nConnection: close\r\n\r\n" + body;
+        std::string status_line = ok ? "HTTP/1.1 200 OK" : "HTTP/1.1 404 Not Found";
+        std::string extra_headers;
+        if (ok && body.rfind("@redirect:", 0) == 0) {  // handler 返回 "@redirect:/路径" 表示 301
+            status_line = "HTTP/1.1 301 Moved Permanently";
+            extra_headers = "Location: " + body.substr(10) + "\r\n";
+            body.clear();
+        }
+        std::string resp = status_line + "\r\nContent-Type: text/html\r\n" + extra_headers +
+                           "Content-Length: " + std::to_string(body.size()) +
+                           "\r\nConnection: close\r\n\r\n" + body;
 
         size_t off = 0;
         while (off < resp.size()) {

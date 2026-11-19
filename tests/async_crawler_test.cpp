@@ -47,8 +47,33 @@ namespace {
         o.max_depth = 2;
         o.max_pages = 1000;
         o.timeout_sec = 5;
+        o.obey_robots = false;                  // 旧测试不关心robots，需要的测试自己打开
         return o;
     }
+
+    // 在任意站点之上叠加一个 /robots.txt；robots 为空串表示"没有这个文件"（404）
+    FakeServer::Handler with_robots(FakeServer::Handler inner, std::string robots) {
+        return [inner, robots](const std::string& path, std::string* body) {
+            if (path == "/robots.txt") {
+                if (robots.empty()) return false;
+                *body = robots;
+                return true;
+            }
+            return inner(path, body);
+        };
+    }
+
+    mc::CrawlOptions polite_opts() {
+        auto o = fast_opts();
+        o.obey_robots = true;
+        return o;
+    }
+
+    long ms_since(std::chrono::steady_clock::time_point t0) {
+        return static_cast<long>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - t0).count());
+    }
+
 
 }  // namespace
 
@@ -124,4 +149,125 @@ TEST(AsyncCrawlerTest, TerminatesWhenNothingToDo) {
     mc::AsyncCrawler crawler(fast_opts());
     auto stats = crawler.run(seed_for(srv));
     EXPECT_EQ(stats.fetched, 1u);
+}
+
+TEST(AsyncCrawlerPolicyTest, RobotsDisallowAndAllowAreObeyed) {
+    // /p/1 与 /p/11../p/19 被前缀规则挡住；/p/10 被更长的 Allow 规则放行
+    FakeServer srv(with_robots(flat_site(25), "User-agent: *\nDisallow: /p/1\nAllow: /p/10$\n"));
+    mc::AsyncCrawler crawler(polite_opts());
+    // auto stats = crawler.run(seed_for(srv));
+    auto stats = crawler.run(seed_for(srv), [](const mc::PageResult& r) {
+        std::cerr << "status=" << r.status << " links=" << r.links_found << " skipped=" << r.skipped << " " << r.url << std::endl;
+    });
+
+    EXPECT_EQ(stats.skipped_robots, 10u);
+    EXPECT_EQ(stats.fetched, 16u);  // "/" + 25 个页面 - 10 个被禁止的
+    EXPECT_EQ(stats.robots_fetched, 1u);
+    EXPECT_EQ(srv.hits("/robots.txt"), 1);  // 这么多页面，robots.txt 只抓一次
+    EXPECT_EQ(srv.hits("/p/1"), 0);
+    EXPECT_EQ(srv.hits("/p/15"), 0);
+    EXPECT_EQ(srv.hits("/p/10"), 1);
+    EXPECT_EQ(srv.hits("/p/2"), 1);
+}
+
+TEST(AsyncCrawlerPolicyTest, MissingRobotsMeansEverythingIsAllowed) {
+    FakeServer srv(with_robots(flat_site(10), ""));  // /robots.txt -> 404
+    mc::AsyncCrawler crawler(polite_opts());
+    auto stats = crawler.run(seed_for(srv));
+    EXPECT_EQ(stats.fetched, 11u);
+    EXPECT_EQ(stats.skipped_robots, 0u);
+    EXPECT_EQ(srv.hits("/robots.txt"), 1);
+}
+
+TEST(AsyncCrawlerPolicyTest, ObeyRobotsCanBeSwitchedOff) {
+    FakeServer srv(with_robots(flat_site(5), "User-agent: *\nDisallow: /\n"));
+    auto opt = fast_opts();  // obey_robots = false
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+    EXPECT_EQ(stats.fetched, 6u);
+    EXPECT_EQ(srv.hits("/robots.txt"), 0);
+}
+
+TEST(AsyncCrawlerPolicyTest, DisallowAllStopsBeforeTheSeed) {
+    FakeServer srv(with_robots(flat_site(5), "User-agent: *\nDisallow: /\n"));
+    mc::AsyncCrawler crawler(polite_opts());
+    auto stats = crawler.run(seed_for(srv));
+    EXPECT_EQ(stats.fetched, 0u);
+    EXPECT_EQ(stats.skipped_robots, 1u);
+    EXPECT_EQ(srv.hits("/"), 0);
+}
+
+TEST(AsyncCrawlerPolicyTest, RateLimitSpacesRequests) {
+    FakeServer srv(flat_site(20));
+    auto opt = fast_opts();
+    opt.host_rate = 20;  // 每秒 20 个 = 每 50ms 一个
+    opt.host_burst = 1;
+    mc::AsyncCrawler crawler(opt);
+
+    const auto t0 = std::chrono::steady_clock::now();
+    auto stats = crawler.run(seed_for(srv));
+    const long ms = ms_since(t0);
+
+    EXPECT_EQ(stats.fetched, 21u);
+    EXPECT_GE(ms, 800);   // 理想值约 1000ms；没有限速时只要几十毫秒
+    EXPECT_LT(ms, 4000);
+}
+
+TEST(AsyncCrawlerPolicyTest, CrawlDelayInRobotsSlowsTheCrawl) {
+    FakeServer srv(with_robots(flat_site(10), "User-agent: *\nCrawl-delay: 0.1\n"));  // 等价于每秒 10 个
+    mc::AsyncCrawler crawler(polite_opts());
+
+    const auto t0 = std::chrono::steady_clock::now();
+    auto stats = crawler.run(seed_for(srv));
+    const long ms = ms_since(t0);
+
+    EXPECT_EQ(stats.fetched, 11u);
+    EXPECT_GE(ms, 800);
+    EXPECT_LT(ms, 4000);
+}
+
+TEST(AsyncCrawlerPolicyTest, CrawlDelayIsCappedByMaxCrawlDelay) {
+    FakeServer srv(with_robots(flat_site(10), "User-agent: *\nCrawl-delay: 3600\n"));
+    auto opt = polite_opts();
+    opt.max_crawl_delay = 0.05;  // 上限压到 50ms
+    mc::AsyncCrawler crawler(opt);
+
+    const auto t0 = std::chrono::steady_clock::now();
+    auto stats = crawler.run(seed_for(srv));
+    EXPECT_EQ(stats.fetched, 11u);
+    EXPECT_LT(ms_since(t0), 3000);  // 否则要等几个小时
+}
+
+TEST(AsyncCrawlerPolicyTest, RedirectTargetsGoThroughTheFrontier) {
+    FakeServer srv([](const std::string& p, std::string* b) {
+        if (p == "/") { *b = R"(<a href="/old">o</a>)"; return true; }
+        if (p == "/old") { *b = "@redirect:/new"; return true; }
+        if (p == "/new") { *b = R"(<a href="/deep">d</a>)"; return true; }
+        if (p == "/deep") { *b = ""; return true; }
+        return false;
+    });
+    CollectSink sink;
+    mc::AsyncCrawler crawler(fast_opts(), nullptr, &sink);
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.fetched, 4u);        // "/"、"/old"(301)、"/new"、"/deep"
+    EXPECT_EQ(sink.saved.size(), 3u);    // 301 本身不保存
+    EXPECT_EQ(srv.hits("/deep"), 1);     // 跳转不算一层深度，所以 /deep 仍在 max_depth=2 之内
+}
+
+TEST(AsyncCrawlerPolicyTest, RedirectIntoDisallowedPathIsBlocked) {
+    FakeServer srv(with_robots(
+            [](const std::string& p, std::string* b) {
+                if (p == "/") { *b = R"(<a href="/old">o</a>)"; return true; }
+                if (p == "/old") { *b = "@redirect:/secret"; return true; }
+                if (p == "/secret") { *b = "classified"; return true; }
+                return false;
+            },
+            "User-agent: *\nDisallow: /secret\n"));
+    mc::AsyncCrawler crawler(polite_opts());
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(srv.hits("/secret"), 0);  // 绕不过去
+    EXPECT_EQ(stats.skipped_robots, 1u);
+    EXPECT_EQ(stats.fetched, 2u);
 }

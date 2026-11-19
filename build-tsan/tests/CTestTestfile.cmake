@@ -14,5 +14,7 @@ include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/async
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_client_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/redis_store_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/resp_test[1]_include.cmake")
+include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/robots_test[1]_include.cmake")
+include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/rate_limiter_test[1]_include.cmake")
 include("/home/davidcopperfield/CLionProjects/minicrawler/build-tsan/tests/mysql_store_test[1]_include.cmake")
 subdirs("../_deps/googletest-build")

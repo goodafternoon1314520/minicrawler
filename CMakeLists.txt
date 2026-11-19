@@ -31,9 +31,12 @@ add_library(mc_core
         src/crawler/crawler.cpp
         src/crawler/async_crawler.cpp
         src/crawler/storage_worker.cpp
+        src/crawler/robots.cpp
+        src/crawler/politeness.cpp
         src/redis/resp.cpp
         src/redis/redis_client.cpp
         src/redis/redis_frontier.cpp
+        src/redis/redis_politeness.cpp
 )
 target_include_directories(mc_core PUBLIC src)
 target_link_libraries(mc_core PUBLIC Threads::Threads)

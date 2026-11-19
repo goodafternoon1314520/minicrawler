@@ -10,9 +10,12 @@
 #include <deque>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <unordered_map>
+#include <vector>
 
 #include "crawler/crawl_util.h"
+#include "crawler/robots.h"
 #include "crawler/storage_worker.h"
 #include "net/async_http.h"
 #include "net/event_loop.h"
@@ -24,30 +27,52 @@ namespace mc {
 
         using Clock = std::chrono::steady_clock;
 
-        std::string host_key(const Url& u) { return u.host + ":" + std::to_string(u.port); }
+        constexpr const char* kRobotsToken = "minicrawler";  // 必须和 User-Agent 里的产品名一致
+        constexpr size_t kMaxRobotsBytes = 500 * 1024;       // RFC 要求至少解析前 500 KiB
+        constexpr int kMaxRobotsRedirects = 3;
 
-// 一个任务从发起到结束的上下文（重定向时同一个 Job 会被重新发起）
+        std::string host_key(const Url& u) { return u.host + ":" + std::to_string(u.port); }
+        std::string target_of(const Url& u) { return u.query.empty() ? u.path : u.path + "?" + u.query; }
+
+// robots 缓存里存的 blob：首字符是类型，A=全放行  D=全禁止  T=后面跟 robots.txt 原文
+        RobotsPolicy policy_from_blob(const std::string& b) {
+            if (b.empty() || b[0] == 'A') return RobotsPolicy::allow_all();
+            if (b[0] == 'D') return RobotsPolicy::disallow_all();
+            return RobotsPolicy::parse(b.substr(1), kRobotsToken);
+        }
+
         struct Job {
             Task task;
-            Url cur;
-            int hops = 0;
             std::string host;
+        };
+
+        enum class RobotsState { kUnknown, kFetching, kReady };
+
+        struct HostState {
+            int in_flight = 0;
+            Clock::time_point next_start{};  // 本进程内的最小请求间隔（--delay-ms）
+            Clock::time_point not_before{};  // 全局限速器让我们等到这个时刻再来问
+            RobotsState robots = RobotsState::kUnknown;
+            RobotsPolicy policy;
+            Clock::time_point robots_expiry{};
         };
 
         class Run {
         public:
-            Run(const CrawlOptions& opt, Frontier& frontier, PageSink* sink, const Url& seed,
-                PageCallback on_page)
+            Run(const CrawlOptions& opt, Frontier& frontier, PageSink* sink, RobotsStore& robots,
+                RateLimiter& limiter, const Url& seed, PageCallback on_page)
                     : opt_(opt),
                       seed_(seed),
                       on_page_(std::move(on_page)),
                       has_sink_(sink != nullptr),
+                      robots_(robots),
+                      limiter_(limiter),
                       client_(loop_, opt.timeout_sec),
                       wake_(::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)),
                       worker_(frontier, sink, opt.max_pages, static_cast<size_t>(opt.concurrency) * 2,
                               [fd = wake_.get()] {
                                   uint64_t one = 1;
-                                  ssize_t r = ::write(fd, &one, sizeof one);  // 让 epoll_wait 立刻返回
+                                  ssize_t r = ::write(fd, &one, sizeof one);
                                   (void)r;
                               }) {}
 
@@ -56,7 +81,6 @@ namespace mc {
                     std::cerr << "failed to create epoll/eventfd\n";
                     return stats_;
                 }
-                // eventfd 可读 = 存储线程有动静。读出计数把它清零（LT 模式下不读会一直触发）
                 loop_.add(wake_.get(), EPOLLIN, [this](uint32_t) {
                     uint64_t v;
                     ssize_t r = ::read(wake_.get(), &v, sizeof v);
@@ -78,12 +102,27 @@ namespace mc {
             }
 
         private:
-            struct HostState {
-                int in_flight = 0;
-                Clock::time_point next_start{};
+            struct Limit {
+                double rate;
+                double burst;
             };
 
-            // 从存储线程取任务，在并发数、站点并发数、站点间隔三重限制下启动请求
+            // 这个站点当前生效的全局速率：--rate 与 robots.txt 的 Crawl-delay 取更严的那个
+            Limit limit_for(const HostState& hs) const {
+                Limit l{opt_.host_rate, std::max(1.0, opt_.host_burst)};
+                if (opt_.obey_robots) {
+                    if (auto d = hs.policy.crawl_delay()) {
+                        const double delay = std::min(*d, opt_.max_crawl_delay);
+                        if (delay > 0) {
+                            const double r = 1.0 / delay;
+                            l.rate = l.rate > 0 ? std::min(l.rate, r) : r;
+                            l.burst = 1;  // Crawl-delay 的含义就是"两次请求至少隔这么久"，不允许连发
+                        }
+                    }
+                }
+                return l;
+            }
+
             void schedule() {
                 const size_t limit = static_cast<size_t>(opt_.concurrency);
                 Task t;
@@ -91,21 +130,123 @@ namespace mc {
 
                 const auto now = Clock::now();
                 for (auto it = waiting_.begin(); it != waiting_.end() && in_flight_ < limit;) {
-                    HostState& hs = hosts_[host_key(it->url)];
-                    if (hs.in_flight < opt_.max_per_host && now >= hs.next_start) {
-                        Task task = std::move(*it);
-                        it = waiting_.erase(it);
-                        start(std::move(task), now);
-                    } else {
-                        ++it;
+                    const std::string hk = host_key(it->url);
+                    HostState& hs = hosts_[hk];
+
+                    // ---- 1) robots.txt ----
+                    if (opt_.obey_robots) {
+                        if (hs.robots == RobotsState::kReady && now >= hs.robots_expiry) hs.robots = RobotsState::kUnknown;
+                        if (hs.robots == RobotsState::kUnknown) begin_robots(hk, it->url);  // 命中缓存会立刻变成 kReady
+                        if (hs.robots != RobotsState::kReady) {  // 正在抓 robots.txt：任务留在队列里等
+                            ++it;
+                            continue;
+                        }
+                        if (!hs.policy.allowed(target_of(it->url))) {
+                            skip_blocked(*it);
+                            it = waiting_.erase(it);
+                            continue;
+                        }
                     }
+
+                    // ---- 2) 本进程的并发与间隔限制 ----
+                    if (hs.in_flight >= opt_.max_per_host || now < hs.next_start || now < hs.not_before) {
+                        ++it;
+                        continue;
+                    }
+
+                    // ---- 3) 全局令牌桶 ----
+                    const Limit lim = limit_for(hs);
+                    if (lim.rate > 0) {
+                        const long wait_ms = limiter_.acquire(hk, lim.rate, lim.burst);
+                        if (wait_ms > 0) {
+                            hs.not_before = now + std::chrono::milliseconds(wait_ms);  // 这段时间内不再问，免得空转
+                            ++it;
+                            continue;
+                        }
+                    }
+
+                    Task task = std::move(*it);
+                    it = waiting_.erase(it);
+                    start(std::move(task), now);
                 }
             }
+
+            // ---------- robots.txt ----------
+
+            void begin_robots(const std::string& hk, const Url& u) {
+                HostState& hs = hosts_[hk];
+                std::string blob;
+                // 注意：这是一次阻塞的 Redis 调用，但每个站点每隔几分钟才发生一次
+                if (robots_.load(hk, &blob) && !blob.empty()) {
+                    hs.policy = policy_from_blob(blob);
+                    hs.robots = RobotsState::kReady;
+                    hs.robots_expiry = Clock::now() + std::chrono::seconds(blob[0] == 'D' ? 60 : 600);
+                    return;
+                }
+                hs.robots = RobotsState::kFetching;
+                Url ru = u;
+                ru.path = "/robots.txt";
+                ru.query.clear();
+                ++stats_.robots_fetched;
+                request_robots(hk, ru, 0);
+            }
+
+            void request_robots(const std::string& hk, const Url& ru, int hops) {
+                client_.get(ru, [this, hk, ru, hops](std::optional<HttpResponse> resp, const std::string&) {
+                    on_robots(hk, ru, hops, std::move(resp));
+                });
+            }
+
+            void on_robots(const std::string& hk, const Url& ru, int hops, std::optional<HttpResponse> resp) {
+                if (resp && is_redirect(resp->status) && hops < kMaxRobotsRedirects) {
+                    auto loc = resp->headers.find("location");
+                    if (loc != resp->headers.end()) {
+                        auto next = resolve_url(ru, loc->second);
+                        if (next && next->scheme == "http") {
+                            request_robots(hk, *next, hops + 1);
+                            return;
+                        }
+                    }
+                }
+
+                std::string blob;
+                int ttl = 0;
+                if (resp && resp->status >= 200 && resp->status < 300) {
+                    blob = "T" + resp->body.substr(0, kMaxRobotsBytes);
+                    ttl = 86400;
+                } else if (resp && resp->status >= 400 && resp->status < 500) {
+                    blob = "A";  // 4xx = "没有 robots.txt" = 没有限制
+                    ttl = 86400;
+                } else {
+                    blob = "D";  // 5xx、超时、连不上、重定向循环：RFC 要求当作"全部禁止"，并尽快重试
+                    ttl = 300;
+                }
+
+                HostState& hs = hosts_[hk];
+                hs.policy = policy_from_blob(blob);
+                hs.robots = RobotsState::kReady;
+                hs.robots_expiry = Clock::now() + std::chrono::seconds(std::min(ttl, 600));
+                robots_.save(hk, blob, ttl);
+            }
+
+            // 被 robots.txt 拒绝的任务：不发请求。在队列里记为"失败"并写明原因，方便事后统计
+            void skip_blocked(const Task& t) {
+                static const char* kReason = "blocked by robots.txt";
+                ++stats_.skipped_robots;
+                PageResult pr;
+                pr.url = t.url.to_string();
+                pr.depth = t.depth;
+                pr.skipped = true;
+                pr.error = kReason;
+                worker_.complete(t.url, false, kReason);
+                if (on_page_) on_page_(pr);
+            }
+
+            // ---------- 请求与响应 ----------
 
             void start(Task task, Clock::time_point now) {
                 auto job = std::make_shared<Job>();
                 job->host = host_key(task.url);
-                job->cur = task.url;
                 job->task = std::move(task);
 
                 HostState& hs = hosts_[job->host];
@@ -113,40 +254,20 @@ namespace mc {
                 hs.next_start = now + std::chrono::milliseconds(opt_.delay_ms);
                 ++in_flight_;
                 stats_.peak_in_flight = std::max(stats_.peak_in_flight, in_flight_);
-                issue(job);
-            }
 
-            void issue(const std::shared_ptr<Job>& job) {
-                client_.get(job->cur, [this, job](std::optional<HttpResponse> resp, const std::string& err) {
+                client_.get(job->task.url, [this, job](std::optional<HttpResponse> resp, const std::string& err) {
                     on_response(job, std::move(resp), err);
                 });
             }
 
-            void on_response(const std::shared_ptr<Job>& job, std::optional<HttpResponse> resp,
-                             const std::string& err) {
-                // ---- 重定向：换个 URL 继续发，并发名额不释放 ----
-                if (resp && is_redirect(resp->status) && job->hops < opt_.max_redirects) {
-                    auto loc = resp->headers.find("location");
-                    if (loc != resp->headers.end()) {
-                        auto next = resolve_url(job->cur, loc->second);
-                        if (next && next->scheme == "http" &&
-                            (!opt_.same_host_only || next->host == seed_.host)) {
-                            job->cur = *next;
-                            ++job->hops;
-                            worker_.mark_seen(job->cur, job->task.depth);
-                            issue(job);
-                            return;
-                        }
-                    }
-                }
-
-                // ---- 到这里这个任务结束了 ----
+            void on_response(const std::shared_ptr<Job>& job, std::optional<HttpResponse> resp, const std::string& err) {
                 --in_flight_;
                 --hosts_[job->host].in_flight;
 
+                const Task& task = job->task;
                 PageResult pr;
-                pr.url = job->cur.to_string();
-                pr.depth = job->task.depth;
+                pr.url = task.url.to_string();
+                pr.depth = task.depth;
                 const bool ok = resp.has_value();
 
                 if (!resp) {
@@ -157,25 +278,34 @@ namespace mc {
                     pr.bytes = resp->body.size();
                     ++stats_.fetched;
 
-                    const int depth = job->task.depth;
                     std::vector<std::pair<Url, int>> found;
-                    if (resp->status == 200 && is_html(*resp) && depth < opt_.max_depth) {
+                    const bool redirect = is_redirect(resp->status);
+                    if (redirect) {
+                        // 重定向目标当作"新发现的链接"，深度不变（跳转不算点击）。
+                        // 这样它和普通链接一样要过 frontier 去重、robots 检查和限速，不会绕过任何一道。
+                        auto loc = resp->headers.find("location");
+                        if (loc != resp->headers.end()) {
+                            auto next = resolve_url(task.url, loc->second);
+                            if (next && next->scheme == "http" && (!opt_.same_host_only || next->host == seed_.host))
+                                found.emplace_back(*next, task.depth);
+                        }
+                    } else if (resp->status == 200 && is_html(*resp) && task.depth < opt_.max_depth) {
                         auto links = extract_links(resp->body);
                         pr.links_found = links.size();
                         for (const auto& raw : links) {
-                            auto next = resolve_url(job->cur, raw);
+                            auto next = resolve_url(task.url, raw);
                             if (!next) continue;
                             if (next->scheme != "http") { ++stats_.skipped_unsupported; continue; }
                             if (opt_.same_host_only && next->host != seed_.host) continue;
-                            found.emplace_back(*next, depth + 1);
+                            found.emplace_back(*next, task.depth + 1);
                         }
                     }
 
-                    // 顺序与 Step 3 一致：存页面 -> 入队新链接 -> 最后标记完成
-                    if (has_sink_) {
+                    // 顺序与 Step 3 一致：存页面 -> 入队新链接 -> 最后标记完成。301 本身不存。
+                    if (has_sink_ && !redirect) {
                         PageRecord rec;
                         rec.url = pr.url;
-                        rec.depth = depth;
+                        rec.depth = task.depth;
                         rec.status = resp->status;
                         auto ct = resp->headers.find("content-type");
                         if (ct != resp->headers.end()) rec.content_type = ct->second;
@@ -185,7 +315,7 @@ namespace mc {
                     if (!found.empty()) worker_.push_links(std::move(found));
                 }
 
-                worker_.complete(job->task.url, ok, pr.error);
+                worker_.complete(task.url, ok, pr.error);
                 if (on_page_) on_page_(pr);
             }
 
@@ -193,12 +323,14 @@ namespace mc {
             Url seed_;
             PageCallback on_page_;
             bool has_sink_;
+            RobotsStore& robots_;
+            RateLimiter& limiter_;
             EventLoop loop_;
             AsyncHttpClient client_;
             Fd wake_;
             StorageWorker worker_;  // 必须声明在 wake_ 之后：析构时先 join 线程，再关 eventfd
 
-            std::deque<Task> waiting_;  // 已取出但还没满足限流条件的任务
+            std::deque<Task> waiting_;
             std::unordered_map<std::string, HostState> hosts_;
             size_t in_flight_ = 0;
             CrawlStats stats_;
@@ -206,19 +338,24 @@ namespace mc {
 
     }  // namespace
 
-    AsyncCrawler::AsyncCrawler(CrawlOptions opt, Frontier* frontier, PageSink* sink)
-            : opt_(opt), frontier_(frontier), sink_(sink) {
+    AsyncCrawler::AsyncCrawler(CrawlOptions opt, Frontier* frontier, PageSink* sink, Politeness pol)
+            : opt_(opt), frontier_(frontier), sink_(sink), pol_(pol) {
         opt_.concurrency = std::max(1, opt_.concurrency);
         opt_.max_per_host = std::max(1, opt_.max_per_host);
         opt_.timeout_sec = std::max(1, opt_.timeout_sec);
     }
 
     CrawlStats AsyncCrawler::run(const Url& seed, PageCallback on_page) {
-        MemoryFrontier local;
-        Frontier& frontier = frontier_ ? *frontier_ : local;
+        MemoryFrontier local_frontier;
+        MemoryRobotsStore local_robots;
+        MemoryRateLimiter local_limiter;
+        Frontier& frontier = frontier_ ? *frontier_ : local_frontier;
+        RobotsStore& robots = pol_.robots ? *pol_.robots : local_robots;
+        RateLimiter& limiter = pol_.limiter ? *pol_.limiter : local_limiter;
+
         frontier.push(seed, 0);  // 此时存储线程还没启动，主线程独占 frontier
 
-        Run r(opt_, frontier, sink_, seed, std::move(on_page));
+        Run r(opt_, frontier, sink_, robots, limiter, seed, std::move(on_page));
         return r.go();
     }
 

@@ -13,6 +13,7 @@
 #include "fake_server.h"
 #include "redis/redis_client.h"
 #include "redis/redis_frontier.h"
+#include "redis/redis_politeness.h"
 
 namespace {
 
@@ -255,4 +256,42 @@ TEST_F(RedisTest, TwoCrawlersShareOneQueue) {
     for (int i = 1; i <= 40; ++i) EXPECT_EQ(srv.hits("/p/" + std::to_string(i)), 1) << i;
     EXPECT_EQ(srv.hits("/"), 1);
     EXPECT_EQ(n1->f->counts().done, 41u);
+}
+
+TEST_F(RedisTest, RateLimiterIsSharedAcrossConnections) {
+    mc::RedisClient c1, c2;
+    std::string err;
+    ASSERT_TRUE(c1.connect(mc::RedisConfig::from_env(), &err)) << err;
+    ASSERT_TRUE(c2.connect(mc::RedisConfig::from_env(), &err)) << err;
+    mc::RedisRateLimiter a(c1, ns), b(c2, ns);
+
+    // 容量 3：两个"进程"合起来只能拿到 3 个令牌
+    EXPECT_EQ(a.acquire("h:80", 1.0, 3.0), 0);
+    EXPECT_EQ(b.acquire("h:80", 1.0, 3.0), 0);
+    EXPECT_EQ(a.acquire("h:80", 1.0, 3.0), 0);
+    long w = b.acquire("h:80", 1.0, 3.0);
+    EXPECT_GT(w, 0);
+    EXPECT_LE(w, 1000);
+    EXPECT_EQ(a.acquire("other:80", 1.0, 3.0), 0);  // 别的站点是独立的桶
+
+    mc::RespValue r;
+    ASSERT_TRUE(admin.command({"PTTL", ns + ":rl:h:80"}, &r, &err)) << err;
+    EXPECT_GT(r.integer, 0);    // 桶有过期时间，不会在 Redis 里无限堆积
+    EXPECT_LE(r.integer, 4000);
+}
+
+TEST_F(RedisTest, RobotsStoreRoundTripAndExpiry) {
+    mc::RedisClient c;
+    std::string err;
+    ASSERT_TRUE(c.connect(mc::RedisConfig::from_env(), &err)) << err;
+    mc::RedisRobotsStore s(c, ns);
+
+    std::string blob;
+    EXPECT_FALSE(s.load("h:80", &blob));
+    s.save("h:80", "Tuser-agent: *\nDisallow: /x\n", 1);  // 含换行：二进制安全
+    ASSERT_TRUE(s.load("h:80", &blob));
+    EXPECT_EQ(blob, "Tuser-agent: *\nDisallow: /x\n");
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    EXPECT_FALSE(s.load("h:80", &blob));  // TTL 到了
 }
