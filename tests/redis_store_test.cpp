@@ -8,6 +8,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map>
+#include <mutex>
 
 #include "crawler/async_crawler.h"
 #include "fake_server.h"
@@ -212,6 +214,7 @@ namespace {
         o.max_depth = 2;
         o.max_pages = 1000;
         o.timeout_sec = 5;
+        o.max_retries = 0;
         return o;
     }
 
@@ -219,6 +222,21 @@ namespace {
         return *mc::parse_url("http://127.0.0.1:" + std::to_string(s.port()) + "/");
     }
 
+    // 与 async_crawler_test.cpp 里同名的辅助函数相同（两个测试文件各自独立编译，所以各放一份）
+    FakeServer::Handler flaky(FakeServer::Handler inner, int fail_times, std::string fail_body = "@status:503") {
+        auto mu = std::make_shared<std::mutex>();
+        auto counts = std::make_shared<std::map<std::string, int>>();
+        return [=](const std::string& path, std::string* body) {
+            if (path.rfind("/p/", 0) == 0) {
+                std::lock_guard<std::mutex> lk(*mu);
+                if ((*counts)[path]++ < fail_times) {
+                    *body = fail_body;
+                    return true;
+                }
+            }
+            return inner(path, body);
+        };
+    }
 }  // namespace
 
 TEST_F(RedisTest, AsyncCrawlerRunsOnRedisFrontier) {
@@ -294,4 +312,63 @@ TEST_F(RedisTest, RobotsStoreRoundTripAndExpiry) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     EXPECT_FALSE(s.load("h:80", &blob));  // TTL 到了
+}
+
+TEST_F(RedisTest, RetryGoesThroughTheDelayedQueue) {
+    auto a = node("w1");
+    auto& f = *a->f;
+    f.push(U("http://a.com/1"), 2);
+    auto t = f.pop();
+    ASSERT_TRUE(t);
+    EXPECT_EQ(t->attempt, 0);
+
+    f.retry_later(t->url, t->depth, 1, 400, "boom");
+
+    mc::RespValue r;
+    std::string err;
+    ASSERT_TRUE(a->rc.command({"LLEN", ns + ":proc:w1"}, &r, &err)) << err;
+    EXPECT_EQ(r.integer, 0);  // 已经从"处理中"移走
+    EXPECT_EQ(f.counts().delayed, 1u);
+    EXPECT_FALSE(f.pop());           // 还没到期
+    EXPECT_TRUE(f.others_active());  // 有任务在等重试，不能收工
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    auto t2 = f.pop();
+    ASSERT_TRUE(t2);
+    EXPECT_EQ(t2->url.to_string(), "http://a.com/1");
+    EXPECT_EQ(t2->depth, 2);
+    EXPECT_EQ(t2->attempt, 1);
+    EXPECT_EQ(f.counts().delayed, 0u);
+    EXPECT_FALSE(f.others_active());
+}
+
+TEST_F(RedisTest, OldQueueItemFormatStillParses) {
+    auto a = node("w1", 15, false);
+    mc::RespValue r;
+    std::string err;
+    ASSERT_TRUE(a->rc.command({"LPUSH", ns + ":pending", std::string("3 http://a.com/x")}, &r, &err)) << err;
+    auto t = a->f->pop();
+    ASSERT_TRUE(t);
+    EXPECT_EQ(t->depth, 3);
+    EXPECT_EQ(t->attempt, 0);
+}
+
+TEST_F(RedisTest, AsyncCrawlerRetriesThroughTheRedisDelayedQueue) {
+    FakeServer srv(flaky(flat_site(10), 1));
+    auto n = node("w1");
+    auto opt = fast_opts();
+    opt.max_retries = 3;
+    opt.retry_base_ms = 30;
+    opt.retry_max_ms = 300;
+    mc::AsyncCrawler crawler(opt, n->f.get(), nullptr);
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.fetched, 11u);
+    EXPECT_EQ(stats.failed, 0u);
+    EXPECT_EQ(stats.retried, 10u);
+    auto c = n->f->counts();
+    EXPECT_EQ(c.done, 11u);
+    EXPECT_EQ(c.pending, 0u);
+    EXPECT_EQ(c.in_progress, 0u);
+    EXPECT_EQ(c.delayed, 0u);
 }

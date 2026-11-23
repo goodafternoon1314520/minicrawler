@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <iomanip>
 
 #include "crawler/async_crawler.h"
 #include "redis/redis_client.h"
@@ -31,6 +32,7 @@ namespace {
 
     void usage() {
         std::cerr << "usage: minicrawler <seed-url> [--depth N] [--max-pages N] [--delay-ms N]\n"
+                     "                              [--retries N] [--retry-base-ms N] [--retry-max-ms N] [--progress S]\n"
                      "                              [--concurrency N] [--per-host N] [--timeout S]\n"
                      "                              [--rate R] [--burst B] [--max-crawl-delay S] [--no-robots]\n"
                      "                              [--any-host] [--mysql] [--redis]\n"
@@ -93,7 +95,8 @@ namespace {
                 else if (a == "--burst") o.host_burst = std::max(1.0, d);
                 else o.max_crawl_delay = d;
             } else if ((a == "--depth" || a == "--max-pages" || a == "--delay-ms" || a == "--concurrency" ||
-                        a == "--per-host" || a == "--timeout" || a == "--hb-ttl") &&
+                        a == "--per-host" || a == "--timeout" || a == "--hb-ttl" || a == "--retries" ||
+                        a == "--retry-base-ms" || a == "--retry-max-ms" || a == "--progress") &&
                        i + 1 < argc && to_long(argv[i + 1], &v) && v >= 0) {
                 ++i;
                 if (a == "--depth") o.max_depth = static_cast<int>(v);
@@ -102,6 +105,10 @@ namespace {
                 else if (a == "--concurrency") o.concurrency = static_cast<int>(std::max(1L, v));
                 else if (a == "--per-host") o.max_per_host = static_cast<int>(std::max(1L, v));
                 else if (a == "--timeout") o.timeout_sec = static_cast<int>(std::max(1L, v));
+                else if (a == "--retries") o.max_retries = static_cast<int>(v);
+                else if (a == "retry-base-ms") o.retry_base_ms = static_cast<int>(v);
+                else if (a == "retry-max-ms") o.retry_max_ms = static_cast<int>(std::max(1L, v));
+                else if (a == "progress") o.progress_sec = static_cast<int>(v);
                 else cli->hb_ttl = static_cast<int>(std::max(1L, v));
             } else if (!a.empty() && a[0] != '-' && cli->seed.empty()) {
                 cli->seed = a;
@@ -113,8 +120,8 @@ namespace {
     }
 
     void print_counts(const mc::TaskCounts& c) {
-        std::cout << "tasks: pending=" << c.pending << " in_progress=" << c.in_progress << " done=" << c.done
-                  << " failed=" << c.failed << "\n";
+        std::cout << "tasks: pending=" << c.pending << "delayed=" << c.delayed << " in_progress=" << c.in_progress
+                  << " done=" << c.done << " failed=" << c.failed << "\n";
     }
 
 }  // namespace
@@ -204,7 +211,10 @@ int main(int argc, char** argv) {
     auto stats = crawler.run(*seed, [](const mc::PageResult& r) {
         if (r.skipped) {
             std::cout << "[d=" << r.depth << "] SKIP " << r.url << "  (" << r.error << ")\n";
-        } else if (r.status == 0) {
+        } else if (r.retrying) {
+            std::cout << "[d=" << r.depth << "] RETRY " << r.url << " (" << r.error << ", attempt "
+                      << r.attempt + 1 << ", in " << r.retry_in_ms << "ms)\n";
+        }else if (!r.error.empty()) {
             std::cout << "[d=" << r.depth << "] ERR  " << r.url << "  (" << r.error << ")\n";
         } else {
             std::cout << "[d=" << r.depth << "] " << r.status << "  " << r.url << "  (" << r.bytes << " bytes, "
@@ -218,11 +228,16 @@ int main(int argc, char** argv) {
     const size_t total = stats.fetched + stats.failed;
     std::cout << "\ndone";
     if (redis_frontier) std::cout << " [worker " << cli.worker_id << "]";
-    std::cout << ": fetched=" << stats.fetched << " failed=" << stats.failed
+    std::cout << ": fetched=" << stats.fetched << " failed=" << stats.failed << " retried=" << stats.retried
               << " skipped_robots=" << stats.skipped_robots << " robots_fetched=" << stats.robots_fetched
               << " skipped_non_http=" << stats.skipped_unsupported << " store_failed=" << stats.store_failed << "\n"
               << "peak_in_flight=" << stats.peak_in_flight << "  elapsed=" << secs << "s  "
-              << (secs > 0 ? total / secs : 0.0) << " pages/s\n";
+              << (secs > 0 ? total / secs : 0.0) << " pages/s  bytes=" << stats.bytes << "\n";
+    std::cout << "status (per attempt, 0 = no response):";
+    for (const auto& [code, n] : stats.by_status) std::cout << " " << code << "=" << n;
+    std::cout << "\n"
+              << std::fixed << std::setprecision(1) << "latency: p50=" << stats.latency_p50_ms
+              << "ms p95=" << stats.latency_p95_ms << "ms max=" << stats.latency_max_ms << "ms\n";
     if (redis_frontier) print_counts(redis_frontier->counts());
     else if (mysql_frontier) print_counts(mysql_frontier->counts());
 }

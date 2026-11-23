@@ -31,6 +31,7 @@ namespace mc {
         void push_links(std::vector<std::pair<Url, int>> links);
         void mark_seen(const Url& url, int depth);
         void complete(const Url& url, bool ok, std::string error);
+        void retry(const Url& url, int depth, int attempt, long delay_ms, std::string error);
 
         // 命令执行完，预取队列空，frontier也没有更多任务
         bool drained();

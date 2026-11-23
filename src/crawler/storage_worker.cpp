@@ -79,6 +79,12 @@ namespace mc {
         });
     }
 
+    void StorageWorker::retry(const Url& url, int depth, int attempt, long delay_ms, std::string error) {
+        post([this, url, depth, attempt, delay_ms, error = std::move(error)] {
+            frontier_.retry_later(url, depth, attempt, delay_ms, error);
+        });
+    }
+
     bool StorageWorker::drained() {
         std::lock_guard<std::mutex> lk(mu_);
         const bool no_more_tasks = exhausted_ || popped_ >= budget_;

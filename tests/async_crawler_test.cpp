@@ -3,6 +3,9 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <map>
+#include <memory>
+#include <mutex>
 
 #include "crawler/async_crawler.h"
 #include "fake_server.h"
@@ -48,6 +51,7 @@ namespace {
         o.max_pages = 1000;
         o.timeout_sec = 5;
         o.obey_robots = false;                  // 旧测试不关心robots，需要的测试自己打开
+        o.max_retries = 0;                      // 旧测试不关心重试，需要的测试自己打开
         return o;
     }
 
@@ -74,6 +78,29 @@ namespace {
                 std::chrono::steady_clock::now() - t0).count());
     }
 
+    // 每个 /p/ 页面的前 fail_times 次请求返回 fail_body，之后正常。handler 会被多个连接线程同时调用，所以要加锁。
+    FakeServer::Handler flaky(FakeServer::Handler inner, int fail_times, std::string fail_body = "@status:503") {
+        auto mu = std::make_shared<std::mutex>();
+        auto counts = std::make_shared<std::map<std::string, int>>();
+        return [=](const std::string& path, std::string* body) {
+            if (path.rfind("/p/", 0) == 0) {
+                std::lock_guard<std::mutex> lk(*mu);
+                if ((*counts)[path]++ < fail_times) {
+                    *body = fail_body;
+                    return true;
+                }
+            }
+            return inner(path, body);
+        };
+    }
+
+    mc::CrawlOptions retry_opts() {
+        auto o = fast_opts();
+        o.max_retries = 3;
+        o.retry_base_ms = 20;
+        o.retry_max_ms = 500;
+        return o;
+    }
 
 }  // namespace
 
@@ -270,4 +297,117 @@ TEST(AsyncCrawlerPolicyTest, RedirectIntoDisallowedPathIsBlocked) {
     EXPECT_EQ(srv.hits("/secret"), 0);  // 绕不过去
     EXPECT_EQ(stats.skipped_robots, 1u);
     EXPECT_EQ(stats.fetched, 2u);
+}
+
+TEST(AsyncCrawlerRetryTest, TransientFailuresAreRetriedUntilSuccess) {
+    FakeServer srv(flaky(flat_site(5), 2));
+    mc::AsyncCrawler crawler(retry_opts());
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.fetched, 6u);
+    EXPECT_EQ(stats.failed, 0u);
+    EXPECT_EQ(stats.retried, 10u);  // 5 个页面 x 失败 2 次
+    for (int i = 1; i <= 5; ++i) EXPECT_EQ(srv.hits("/p/" + std::to_string(i)), 3) << i;
+    EXPECT_EQ(stats.by_status[503], 10u);
+    EXPECT_EQ(stats.by_status[200], 6u);
+}
+
+TEST(AsyncCrawlerRetryTest, GivesUpAfterMaxRetries) {
+    FakeServer srv(flaky(flat_site(5), 1000));
+    auto opt = retry_opts();
+    opt.max_retries = 2;
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.fetched, 1u);  // 只有 "/" 成功
+    EXPECT_EQ(stats.failed, 5u);
+    EXPECT_EQ(stats.retried, 10u);
+    EXPECT_EQ(srv.hits("/p/1"), 3);  // 1 次原始 + 2 次重试
+}
+
+TEST(AsyncCrawlerRetryTest, PermanentFailuresAreNotRetried) {
+    FakeServer srv([](const std::string& p, std::string* b) {
+        if (p == "/") {
+            *b = R"(<a href="/gone">g</a>)";
+            return true;
+        }
+        return false;  // 404
+    });
+    mc::AsyncCrawler crawler(retry_opts());
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(srv.hits("/gone"), 1);
+    EXPECT_EQ(stats.retried, 0u);
+    EXPECT_EQ(stats.failed, 0u);   // 404 是一次成功的 HTTP 交互
+    EXPECT_EQ(stats.fetched, 2u);
+}
+
+TEST(AsyncCrawlerRetryTest, ConnectionRefusedIsRetriedThenGivenUp) {
+    FakeServer srv([](const std::string&, std::string* b) {
+        *b = R"(<a href="http://127.0.0.1:1/dead">d</a>)";
+        return true;
+    });
+    auto opt = retry_opts();
+    opt.max_retries = 1;
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.fetched, 1u);
+    EXPECT_EQ(stats.retried, 1u);
+    EXPECT_EQ(stats.failed, 1u);
+}
+
+TEST(AsyncCrawlerRetryTest, RetryAfterIsHonored) {
+    FakeServer srv(flaky(flat_site(1), 1, "@status:429:1"));
+    auto opt = retry_opts();
+    opt.retry_max_ms = 5000;  // 上限必须大于 Retry-After 的 1 秒，否则会被判定为"等太久"而放弃
+    const auto t0 = std::chrono::steady_clock::now();
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+    const long ms = ms_since(t0);
+
+    EXPECT_EQ(stats.retried, 1u);
+    EXPECT_EQ(stats.fetched, 2u);
+    EXPECT_GE(ms, 900);
+    EXPECT_LT(ms, 4000);
+}
+
+TEST(AsyncCrawlerRetryTest, RetryAfterBeyondTheCapGivesUpImmediately) {
+    FakeServer srv(flaky(flat_site(1), 1000, "@status:503:3600"));  // 让我们等一小时
+    auto opt = retry_opts();
+    opt.retry_max_ms = 500;
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.retried, 0u);
+    EXPECT_EQ(stats.failed, 1u);
+    EXPECT_EQ(srv.hits("/p/1"), 1);
+}
+
+TEST(AsyncCrawlerRetryTest, BackoffGrowsExponentially) {
+    FakeServer srv(flaky(flat_site(1), 3));
+    auto opt = retry_opts();
+    opt.retry_base_ms = 100;
+    opt.retry_max_ms = 10000;
+    const auto t0 = std::chrono::steady_clock::now();
+    mc::AsyncCrawler crawler(opt);
+    auto stats = crawler.run(seed_for(srv));
+    const long ms = ms_since(t0);
+
+    EXPECT_EQ(stats.retried, 3u);
+    EXPECT_EQ(srv.hits("/p/1"), 4);
+    EXPECT_GE(ms, 300);   // 100+200+400，抖动最少打五折也有 350ms
+    EXPECT_LT(ms, 3000);
+}
+
+TEST(AsyncCrawlerMetricsTest, LatencyBytesAndStatusCounts) {
+    FakeServer srv(flat_site(10), /*delay_ms=*/20);
+    mc::AsyncCrawler crawler(fast_opts());
+    auto stats = crawler.run(seed_for(srv));
+
+    EXPECT_EQ(stats.by_status[200], 11u);
+    EXPECT_GT(stats.bytes, 0u);
+    EXPECT_GE(stats.latency_p50_ms, 15.0);
+    EXPECT_LE(stats.latency_p50_ms, stats.latency_p95_ms);
+    EXPECT_LE(stats.latency_p95_ms, stats.latency_max_ms);
 }

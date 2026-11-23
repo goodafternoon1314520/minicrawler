@@ -7,18 +7,18 @@
 
 namespace mc {
     namespace {
-        void log_err(const char* where, const std::string& err) {
-            std::cerr << "[redis] " << where << ": " << err <<std::endl;
+        void log_err(const char *where, const std::string &err) {
+            std::cerr << "[redis] " << where << ": " << err << std::endl;
         }
 
-        std::string make_item(int depth, const std::string& url) {
-            return std::to_string(depth) + " " + url;
+        std::string make_item(int depth, int attempt, const std::string &url) {
+            return std::to_string(depth) + "/" + std::to_string(attempt) + " " + url;
         }
 
         // 去重 + 入队必须原子，否则SADD成功后，LPUSH之前崩溃，这个URL就永远丢了
         // KEYS[1]=seen KEY[2]=pending ARGV[1]=url ARGV[2]=item
         // SET里存shal(url)：定长（40字节），不管URL多长，内存可预测
-        const char* kPushScript = R"lua(
+        const char *kPushScript = R"lua(
         if redis.call('SADD', KEYS[1], redis.sha1hex(ARGV[1])) == 1 then
             redis.call('LPUSH', KEYS[2], ARGV[2])
             return 1
@@ -26,17 +26,39 @@ namespace mc {
         return 0
         )lua";
 
-        const char* kMarkSeenScript = R"lua(
+        const char *kMarkSeenScript = R"lua(
         return redis.call('SADD', KEYS[1], redis.sha1hex(ARGV[1]))
         )lua";
 
         // KEYS[1]=proc:<我> KEYS[2]=n_done或n_failed KEYS[3]=errors
         // ARGV[1]=item（空串表示不知道） ARGV[2]=error（空串表示成功） ARGV[3]=url
-        const char* kCompleteScript = R"lua(
+        const char *kCompleteScript = R"lua(
         if ARGV[1] ~= '' then redis.call('LREM', KEYS[1], 1, ARGV[1]) end
         redis.call('INCR', KEYS[2])
         if ARGV[2] ~= '' then redis.call('HSET', KEYS[3], ARGV[3], ARGV[2]) end
         return 1
+        )lua";
+
+        // 失败后安排重试：从"处理中"移走 + 放进延迟队列，必须原子。
+        // KEYS[1]=proc:<我>  KEYS[2]=delayed   ARGV[1]=旧 item（空串=不知道）  ARGV[2]=新 item  ARGV[3]=延迟毫秒
+        const char *kRetryScript = R"lua(
+        local t = redis.call('TIME')
+        local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+        if ARGV[1] ~= '' then redis.call('LREM', KEYS[1], 1, ARGV[1]) end
+        redis.call('ZADD', KEYS[2], now + tonumber(ARGV[3]), ARGV[2])
+        return 1
+        )lua";
+
+        // 把到期的重试任务搬回待办队列。KEYS[1]=delayed  KEYS[2]=pending
+        const char *kPromoteScript = R"lua(
+        local t = redis.call('TIME')
+        local now = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+        local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', now, 'LIMIT', 0, 200)
+        for _, m in ipairs(due) do
+        redis.call('LPUSH', KEYS[2], m)
+        redis.call('ZREM', KEYS[1], m)
+        end
+        return #due
         )lua";
     }
 
@@ -170,6 +192,8 @@ namespace mc {
     bool  RedisFrontier::others_active() {
         if (tick() > 0)
             return true;                    // 刚回收了任务，队列里又有活了
+        if (zcard(key("delayed")) > 0)      // 还有任务在等着重试，现在收工太早
+            return true;
         for (const std::string& id : workers()) {
             if (id == opt_.worker_id)
                 continue;
@@ -189,7 +213,7 @@ namespace mc {
             return false;
         RespValue r;
         std::string err;
-        if (!rc_.eval(kPushScript, {key("seen"), key("pending")}, {s, make_item(depth, s)}, &r, &err)) {
+        if (!rc_.eval(kPushScript, {key("seen"), key("pending")}, {s, make_item(depth, 0, s)}, &r, &err)) {
             log_err("push", err);
             return false;
         }
@@ -206,31 +230,46 @@ namespace mc {
 
     std::optional<Task> RedisFrontier::pop() {
         tick();
+        bool promoted = false;
+        if (Clock::now() - last_promote_ >= std::chrono::milliseconds(250)) {  // 定期把到期的重试放回队列
+            promote_due();
+            promoted = true;
+        }
         while (true) {
             RespValue r;
             std::string err;
             if (!rc_.command({"RPOPLPUSH", key("pending"), proc_key(opt_.worker_id)}, &r, &err)) {
                 log_err("pop", err);
-                return std::nullopt;                // 出错当作暂时没任务
+                return std::nullopt;
             }
-            if (r.type != RespValue::Type::kBulk)
-                return std::nullopt;                // 队列空
+            if (r.type != RespValue::Type::kBulk) {
+                // 队列空了：趁机看看有没有到期的重试（上面已经看过就不重复）
+                if (!promoted) {
+                    promoted = true;
+                    if (promote_due() > 0) continue;
+                }
+                return std::nullopt;
+            }
 
             const std::string& item = r.str;
             std::optional<Url> url;
-            int depth = 0;
-            if (size_t sp = item.find(' '); sp != std::string::npos && sp > 0 && sp <= 9) {
-                depth = static_cast<int>(std::strtol(item.substr(0, sp).c_str(), nullptr, 10));
+            int depth = 0, attempt = 0;
+            // 格式 "深度/次数 URL"；旧格式 "深度 URL" 也认（次数按 0）
+            if (size_t sp = item.find(' '); sp != std::string::npos && sp > 0 && sp <= 24) {
+                const std::string head = item.substr(0, sp);
+                const size_t slash = head.find('/');
+                depth = static_cast<int>(std::strtol(head.substr(0, slash).c_str(), nullptr, 10));
+                if (slash != std::string::npos)
+                    attempt = static_cast<int>(std::strtol(head.substr(slash + 1).c_str(), nullptr, 10));
                 url = parse_url(item.substr(sp + 1));
             }
             if (!url) {
-                // 理论上不会发生，队列里都是我们自己写进去的，丢掉坏元素，免得他永远卡在processing里
                 log_err("pop", "malformed queue item dropped");
                 rc_.command({"LREM", proc_key(opt_.worker_id), "1", item}, nullptr, nullptr);
                 continue;
             }
             in_flight_[url->to_string()] = item;
-            return Task{*url, depth};
+            return Task{*url, depth, attempt};
         }
     }
 
@@ -255,6 +294,7 @@ namespace mc {
     TaskCounts RedisFrontier::counts() {
         TaskCounts c;
         c.pending = static_cast<uint64_t>(llen(key("pending")));
+        c.delayed = static_cast<uint64_t>(zcard(key("delayed")));
         for (const std::string &id: workers())
             c.in_progress += static_cast<uint64_t>(llen(proc_key(id)));
 
@@ -268,5 +308,41 @@ namespace mc {
         c.done = get_counter(key("n_done"));
         c.failed = get_counter(key("n_failed"));
         return c;
+    }
+
+    int64_t RedisFrontier::zcard(const std::string& k) {
+        RespValue r;
+        std::string err;
+        if (!rc_.command({"ZCARD", k}, &r, &err)) {
+            log_err("zcard", err);
+            return 0;
+        }
+        return r.integer;
+    }
+
+    size_t RedisFrontier::promote_due() {
+        last_promote_ = Clock::now();
+        RespValue r;
+        std::string err;
+        if (!rc_.eval(kPromoteScript, {key("delayed"), key("pending")}, {}, &r, &err)) {
+            log_err("promote", err);
+            return 0;
+        }
+        return r.type == RespValue::Type::kInteger ? static_cast<size_t>(r.integer) : 0;
+    }
+
+    void RedisFrontier::retry_later(const Url& url, int depth, int attempt, long delay_ms, const std::string&) {
+        tick();
+        const std::string u = url.to_string();
+        std::string old_item;
+        if (auto it = in_flight_.find(u); it != in_flight_.end()) {
+            old_item = std::move(it->second);
+            in_flight_.erase(it);
+        }
+        RespValue r;
+        std::string err;
+        if (!rc_.eval(kRetryScript, {proc_key(opt_.worker_id), key("delayed")},
+                      {old_item, make_item(depth, attempt, u), std::to_string(std::max(0L, delay_ms))}, &r, &err))
+            log_err("retry_later", err);
     }
 }

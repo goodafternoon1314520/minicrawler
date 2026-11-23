@@ -4,6 +4,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 #include "crawler/crawler.h"
 
@@ -206,4 +208,22 @@ TEST(CrawlerTest, SinkFailureIsCountedButCrawlContinues) {
     auto stats = c.run(seed());
     EXPECT_EQ(web.fetched.size(), 2u);
     EXPECT_EQ(stats.store_failed, 2u);
+}
+
+TEST(MemoryFrontierTest, RetryComesBackAfterTheDelay) {
+    mc::MemoryFrontier f;
+    auto u = *mc::parse_url("http://a.com/1");
+    ASSERT_TRUE(f.supports_retry());
+
+    f.retry_later(u, 1, 1, 150, "boom");
+    EXPECT_FALSE(f.pop());           // 还没到期
+    EXPECT_TRUE(f.others_active());  // 有任务在等重试，不能收工
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    auto t = f.pop();
+    ASSERT_TRUE(t);
+    EXPECT_EQ(t->url.to_string(), "http://a.com/1");
+    EXPECT_EQ(t->depth, 1);
+    EXPECT_EQ(t->attempt, 1);
+    EXPECT_FALSE(f.others_active());
 }

@@ -33,6 +33,8 @@ namespace mc {
         std::optional<Task> pop() override;
         void complete(const Url& url, bool ok, const std::string& error) override;
         bool others_active() override;
+        bool supports_retry() const override { return true; }
+        void retry_later(const Url& url, int depth, int attempt, long delay_ms, const std::string& error) override;
 
     private:
         using Clock = std::chrono::steady_clock;
@@ -47,6 +49,8 @@ namespace mc {
         std::vector<std::string> workers();
         bool exists(const std::string& k);
         int64_t llen(const std::string& k);
+        int64_t zcard(const std::string& k);
+        size_t promote_due();               // 把到期的重试任务撤回pending，返回搬了几个
 
         RedisClient& rc_;
         RedisFrontierOptions opt_;
@@ -56,5 +60,6 @@ namespace mc {
         // url -> 他在processing列表里的原始元素，complete()要靠他精确LREM
         // 只在使用RedisClient的那个线程里访问，所以不需要锁
         std::unordered_map<std::string, std::string> in_flight_;
+        Clock::time_point last_promote_{};
     };
 }

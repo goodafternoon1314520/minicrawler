@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cstdlib>
 
 // 测试用HTTP服务器：每个连接一个线程
 // delay_ms：读到请求后先等多久再回复，hang：读到请求永不回复（测超时）
@@ -110,6 +111,11 @@ private:
         if (ok && body.rfind("@redirect:", 0) == 0) {  // handler 返回 "@redirect:/路径" 表示 301
             status_line = "HTTP/1.1 301 Moved Permanently";
             extra_headers = "Location: " + body.substr(10) + "\r\n";
+            body.clear();
+        } else if (ok && body.rfind("@status:", 0) == 0){       // "@status:503" 或 "@status:429:5"（后面是Retry-After秒数）
+            status_line = "HTTP/1.1 " + std::to_string(std::atoi(body.c_str() + 8)) + " Error";
+            if (size_t c = body.find(':', 8); c != std::string::npos)
+                extra_headers += "Retry-After: " + body.substr(c + 1) + "\r\n";
             body.clear();
         }
         std::string resp = status_line + "\r\nContent-Type: text/html\r\n" + extra_headers +
