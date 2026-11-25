@@ -5,7 +5,7 @@ hand-written HTTP/1.1 client, RESP (Redis protocol) client, robots.txt parser, a
 distributed task queue on Redis. It was built step by step as a learning project, and the
 design notes in `docs/` explain every decision and trade-off.
 
-![CI](https://github.com/<your-name>/minicrawler/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/goodafternoon1314520/minicrawler/actions/workflows/ci.yml/badge.svg)
 
 > **Scope warning:** it speaks plain `http://` only. There is no TLS yet, so it cannot crawl
 > most of the public web. See [Known limitations](#known-limitations).
