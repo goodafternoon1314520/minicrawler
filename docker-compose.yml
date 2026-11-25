@@ -1,0 +1,65 @@
+x-crawler: &crawler
+  build: .
+  profiles: ["crawl"]
+  depends_on:
+    redis: { condition: service_healthy }
+    mysql: { condition: service_healthy }
+    site: { condition: service_started }
+  environment:
+    MC_REDIS_HOST: redis
+    MC_DB_HOST: mysql
+    MC_DB_NAME: ${MC_DB_NAME:-minicrawler}
+    MC_DB_USER: ${MC_DB_USER:-crawler}
+    MC_DB_PASS: ${MC_DB_PASS:?set MC_DB_PASS in .env}
+
+services:
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["redis-data:/data"]
+    ports: ["127.0.0.1:16379:6379"]   # 宿主机端口避开本机可能已有的 6379，且只对本机开放
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MC_DB_NAME:-minicrawler}
+      MYSQL_USER: ${MC_DB_USER:-crawler}
+      MYSQL_PASSWORD: ${MC_DB_PASS:?set MC_DB_PASS in .env}
+    volumes: ["mysql-data:/var/lib/mysql"]
+    ports: ["127.0.0.1:13306:3306"]
+    healthcheck:
+      # 用 -h 127.0.0.1：镜像初始化阶段的临时服务器只监听 socket，要等真正的服务器起来才算健康
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  site:        # 演示用的本地慢速站点：600 个页面，每个响应延迟 0.2 秒
+    image: python:3.12-slim
+    command: ["python", "/scripts/slow_site.py", "600", "0.2", "8000"]
+    environment:
+      BIND: "0.0.0.0"
+    volumes: ["./scripts:/scripts:ro"]
+
+  crawler1:
+    <<: *crawler
+    command: ["http://site:8000/", "--redis", "--mysql", "--worker-id", "w1", "--rate", "20",
+              "--delay-ms", "0", "--concurrency", "10", "--per-host", "10", "--max-pages", "100000"]
+  crawler2:
+    <<: *crawler
+    command: ["http://site:8000/", "--redis", "--mysql", "--worker-id", "w2", "--rate", "20",
+              "--delay-ms", "0", "--concurrency", "10", "--per-host", "10", "--max-pages", "100000"]
+  crawler3:
+    <<: *crawler
+    command: ["http://site:8000/", "--redis", "--mysql", "--worker-id", "w3", "--rate", "20",
+              "--delay-ms", "0", "--concurrency", "10", "--per-host", "10", "--max-pages", "100000"]
+
+volumes:
+  redis-data:
+  mysql-data:

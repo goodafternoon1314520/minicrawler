@@ -1,0 +1,7 @@
+.git
+.idea
+.vscode
+build
+build-*
+cmake-build-*
+docs

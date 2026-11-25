@@ -74,4 +74,9 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
-ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+class Server(ThreadingHTTPServer):
+    # 默认只有 5：几百个连接同时到达时 SYN 会被丢弃，客户端要等 1 秒重传，压测数字会被凭空拉低
+    request_queue_size = 1024
+
+
+Server((os.environ.get("BIND", "127.0.0.1"), PORT), Handler).serve_forever()

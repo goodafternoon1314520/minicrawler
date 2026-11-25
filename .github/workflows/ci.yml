@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false          # 一个配置失败，其他配置照样跑完，方便对比
+      matrix:
+        include:
+          - name: debug (ASan + UBSan)
+            cmake_args: -DCMAKE_BUILD_TYPE=Debug
+          - name: debug (TSan)
+            cmake_args: -DCMAKE_BUILD_TYPE=Debug -DMC_TSAN=ON
+          - name: release
+            cmake_args: -DCMAKE_BUILD_TYPE=Release
+
+    services:
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+      mysql:
+        image: mysql:8.0
+        env:   # 只存在于这个一次性的服务容器里，不是真实凭据
+          MYSQL_ROOT_PASSWORD: ci_root_only
+          MYSQL_DATABASE: minicrawler_test
+          MYSQL_USER: crawler
+          MYSQL_PASSWORD: ci_only_password
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pci_root_only"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+
+    env:
+      MC_TEST_REDIS: "1"
+      MC_REDIS_HOST: 127.0.0.1
+      MC_DB_HOST: 127.0.0.1
+      MC_DB_USER: crawler
+      MC_DB_PASS: ci_only_password
+      MC_TEST_DB: minicrawler_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake g++ pkg-config libmysqlclient-dev
+
+      # 较新的内核上 ASan/TSan 会因为地址随机化熵太高而启动失败
+      - name: Lower ASLR entropy for sanitizers
+        run: sudo sysctl -w vm.mmap_rnd_bits=28 || true
+
+      - name: Configure
+        run: cmake -S . -B build ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --timeout 120

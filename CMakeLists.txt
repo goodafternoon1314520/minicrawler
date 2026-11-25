@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(minicrawler LANGUAGES CXX)
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+option(MC_BUILD_TESTS "Build unit and integration tests" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -55,5 +59,7 @@ add_executable(minicrawler src/main.cpp)
 target_link_libraries(minicrawler PRIVATE mc_core mc_storage)
 
 # 测试
-enable_testing()
-add_subdirectory(tests)
+if (MC_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
